@@ -1,11 +1,10 @@
-// import * as React from 'react';
-import { Box, Button, TextField, MenuItem, FormGroup, FormControlLabel, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText } from "@mui/material";
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, TextField, MenuItem, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText, Typography } from '@mui/material';
 import InputMask from 'react-input-mask';
-import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
-import { useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -18,346 +17,377 @@ const MenuProps = {
   },
 };
 
-export default function EditStudent({ studentId }) {
-
-    const apaes = [
-        {
-          value: 'Criciuma',
-          label: 'Criciúma',
-        },
-        {
-          value: 'Tubarao',
-          label: 'Tubarão',
-        },
-        {
-          value: 'Lauro Muller',
-          label: 'Lauro Müller',
-        },
-        {
-          value: 'Icara',
-          label: 'Içara',
-        },
-    ];
-
-    const professionalFunction = [
-        'Deixar aqui as especialidades dos profissionais',
-    ];
-
-    const daysOfTheWeek = [
-        'Segunda-feira 08:00',
-        'Terça-feira 08:00',
-        'Quarta-feira 08:00',
-        'Quinta-feira 08:00',
-        'Sexta-feira 08:00',
-    ];
+export default function EditStudent() {
+    const router = useRouter();
+    const { id } = router.query;
 
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
     const [nameParent, setNameParent] = useState('');
     const [lastNameParent, setLastNameParent] = useState('');
-    const [cpfParent, setCpfParent] = useState('');
     const [telephoneNumber, setTelephoneNumber] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
-    const [studentNeed, setstudentNeed] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [availableHours, setAvailableHours] = useState([]);
+    const [schools, setSchools] = useState([]);
+    const [selectedNecessities, setSelectedNecessities] = useState([]);
+    const [necessities, setNecessities] = useState([]);
+    const [observations, setObservations] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
+    // Função para buscar os dados do aluno ao carregar a página
     useEffect(() => {
-        const fetchStudent = async () => {
+        const fetchStudentData = async () => {
+            if (!id) return;
+
             try {
-                const response = await fetch(`http://localhost:8080/api/students/${studentId}`);
-                
-                if (!response.ok) {
-                    // Log para o caso de erro na resposta
-                    const errorText = await response.text();
-                    console.error("Erro na resposta da API:", errorText);
-                    throw new Error(`Erro na API: ${response.statusText}`);
+                const response = await axios.get(`http://localhost:8080/api/students/${id}`);
+                if (response.status === 200) {
+                    const student = response.data;
+                    setName(student.first_name || '');
+                    setLastName(student.last_name || '');
+                    setCpf(student.cpf || '');
+                    setCellphoneNumber(student.celular || '');
+                    setTelephoneNumber(student.celular_2 || '');
+                    setNameParent(student.responsavel ? student.responsavel.split(' ')[0] : '');
+                    setLastNameParent(student.responsavel ? student.responsavel.split(' ').slice(1).join(' ') : '');
+                    setUnityApae(student.id_school || '');
+                    setObservations(student.obs || '');
+
+                    // Busca as necessidades do aluno
+                    const necessitiesResponse = await axios.get(`http://localhost:8080/api/students/necessity/${id}`);
+                    if (necessitiesResponse.status === 200) {
+                        const studentNecessities = necessitiesResponse.data.map((nec) => nec.id_speciality);
+                        setSelectedNecessities(studentNecessities);
+                    }
                 }
-    
-                const data = await response.json();
-                
-                // Preenche os estados com os dados recebidos
-                setName(data.name || "");
-                setLastName(data.lastName || "");
-                setCpf(data.cpf || "");
-                setNameParent(data.nameParent || "");
-                setLastNameParent(data.lastNameParent || "");
-                setCpfParent(data.cpfParent || "");
-                setTelephoneNumber(data.telephoneNumber || "");
-                setCellphoneNumber(data.cellphoneNumber || "");
-                setUnityApae(data.unityApae || "");
-                setDaysWeek(data.daysWeek || []);
-                setStudentNeed(data.studentNeed || []);
             } catch (error) {
-                console.error("Erro ao buscar dados do estudante:", error);
-            } finally {
-                setLoading(false);
+                console.error('Erro ao buscar dados do aluno:', error);
+                setErrorMessage('Erro ao buscar dados do aluno. Tente novamente.');
             }
         };
-    
-        fetchStudent();
-    }, [studentId]);
-    
 
-    const isDisabled = name === '' || 
-                       lastName ==='' || 
-                       cpf === '' || 
-                       nameParent === '' || 
-                       lastNameParent ==='' || 
-                       cpfParent === '' || 
-                       telephoneNumber === '' || 
-                       cellphoneNumber === '' || 
-                       unityApae === '' || 
-                       studentNeed.length === 0 ||
-                       daysWeek.length === 0;
+        const fetchNecessities = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/speciality');
+                if (response.status === 200) {
+                    setNecessities(response.data);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar lista de necessidades:', error);
+                setErrorMessage('Erro ao buscar lista de necessidades. Tente novamente.');
+            }
+        };
 
-    const handleNeedChange = (event) => {
-        const {
-          target: { value },
-        } = event;
-        setstudentNeed(
-          // On autofill, we get a stringified value
-          typeof value === 'string' ? value.split(',') : value
-        );
-    };
+        const fetchAvailableHours = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/hours');
+                if (response.status === 200) {
+                    setAvailableHours(response.data.map((hour) => ({
+                        value: hour.id_hours,
+                        label: `${hour.weekday} ${hour.starttime} - ${hour.endtime}`,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar horários disponíveis');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar horários disponíveis:', error);
+                setErrorMessage('Erro ao buscar horários disponíveis. Tente novamente.');
+            }
+        };
+
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente.');
+            }
+        };
+
+        fetchStudentData();
+        fetchNecessities();
+        fetchAvailableHours();
+        fetchSchools();
+    }, [id]);
 
     const handleDaysChange = (event) => {
         const {
-          target: { value },
+            target: { value },
         } = event;
-        setDaysWeek(
-          // On autofill, we get a stringified value
-          typeof value === 'string' ? value.split(',') : value
-        );
+        setDaysWeek(typeof value === 'string' ? value.split(',') : value);
     };
 
-    const [students, setStudentsEditing] = useState([]);
+    const handleNeedChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setSelectedNecessities(typeof value === 'string' ? value.split(',') : value);
+    };
 
-    useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/api/students');
-                const data = await response.json();
-                const studentsNecessities = await Promise.all(
-                    data.map(async (student) => {
-                        const necessityResponse = await fetch(`http://localhost:8080/api/students/necessity/${student.id_person}`);
-                        const necessityData = await necessityResponse.json();
-                        return { ...student, necessity: necessityData };
-                    })
-                );
-                setStudentsEditing(studentsNecessities);
-                
-            } catch (error) {
-                console.log('Erro ao buscar lista de alunos: ', error);
-            }
+    const handleSave = async () => {
+        if (!unityApae) {
+            setErrorMessage("Unidade APAE é obrigatória.");
+            return;
+        }
+
+        const studentData = {
+            idSchool: unityApae,
+            firstName: name,
+            lastName: lastName,
+            cpf: cpf.replace(/\D/g, ''), // Remove pontos e hífens do CPF
+            celular: cellphoneNumber.replace(/\D/g, ''), // Remove caracteres não numéricos do celular
+            celular2: telephoneNumber ? telephoneNumber.replace(/\D/g, '') : null, // Remove caracteres não numéricos do telefone ou define como null
+            responsavel: `${nameParent} ${lastNameParent}`,
+            obs: observations,
+            idAvalilablehours: daysWeek.length > 0 ? daysWeek.map(String) : [], // Envia um array de strings dos horários disponíveis
+            specialits: selectedNecessities.length > 0 ? selectedNecessities.map(String) : [], // Envia um array de strings das necessidades selecionadas
         };
-        fetchStudents();
-    }, []);
-    
+
+        try {
+            const response = await axios.put(
+                `http://localhost:8080/api/students/${id}`,
+                studentData
+            );
+            if (response.status === 200) {
+                setSuccessMessage('Aluno atualizado com sucesso!');
+                setErrorMessage('');
+
+                // Redirecionar automaticamente após salvar com sucesso
+                setTimeout(() => {
+                    router.push('/menu/students/students');
+                }, 2000); // Aguardar 2 segundos antes de redirecionar
+            }
+        } catch (error) {
+            setErrorMessage('Erro ao atualizar aluno. Tente novamente.');
+            console.error('Erro:', error.response?.data || error.message);
+        }
+    };
+
     return (
         <div>
-            <div 
-                className='headerStudentsCreate' 
-                style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>
-                <Typography 
-                    variant="h5" 
-                    gutterBottom>
-                        Cadastro de Alunos
+            <div
+                className='headerStudentsCreate'
+                style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}
+            >
+                <Typography variant="h5" gutterBottom>
+                    Editar Aluno
                 </Typography>
-                <Button 
-                    id='backStudents'
-                    variant='outlined'
-                    size='large'
-                    href='../students'
+                <Button
+                    id="backStudents"
+                    variant="outlined"
+                    size="large"
+                    href="../students"
                     startIcon={<ReplyIcon />}
-                    sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                        Voltar
+                    sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
+                >
+                    Voltar
                 </Button>
-                <Button 
-                    id="savePostStudent" 
-                    variant="contained" 
-                    size="large" 
-                    href="" 
-                    startIcon={<SaveIcon />} 
-                    sx={{ marginLeft:'1rem' }}
-                    disabled={isDisabled}>
-                        Salvar
+                <Button
+                    id="savePostStudent"
+                    variant="contained"
+                    size="large"
+                    onClick={handleSave}
+                    startIcon={<SaveIcon />}
+                    sx={{ marginLeft: '1rem' }}
+                >
+                    Salvar
                 </Button>
             </div>
-            <Box 
-                id='createStudentForm'>
-                <Box 
-                    id='fullNameStudent' 
-                    sx={{display:'flex', padding:'1rem'}}>
-                    <TextField 
-                        id='name' 
-                        variant='outlined' 
-                        label='Nome' 
+
+            {successMessage && (
+                <Typography variant="body1" color="success" sx={{ margin: '10px' }}>
+                    {successMessage}
+                </Typography>
+            )}
+            {errorMessage && (
+                <Typography variant="body1" color="error" sx={{ margin: '10px' }}>
+                    {errorMessage}
+                </Typography>
+            )}
+
+            <Box id="createStudentForm">
+                <Box id="studentId" sx={{ display: 'flex', padding: '1rem' }}>
+                    <TextField
+                        id="studentId"
+                        variant="outlined"
+                        label="ID do Aluno"
+                        value={id}
+                        disabled
+                        sx={{ marginRight: '1rem', width: '150px' }}
+                    />
+                </Box>
+
+                <Box id="fullNameStudent" sx={{ display: 'flex', padding: '1rem' }}>
+                    <TextField
+                        id="name"
+                        variant="outlined"
+                        label="Nome"
                         value={name}
-                        sx={{marginRight:'1rem', width:'200px'}} 
-                        onChange={(e) => setName(e.target.value)}>
-                    </TextField>
-                    <TextField 
-                        id='lastName' 
-                        variant='outlined' 
-                        label='Sobrenome' 
-                        sx={{marginRight:'1rem', width:'400px'}} 
-                        onChange={(e) => setLastName(e.target.value)}>
-                    </TextField>
+                        sx={{ marginRight: '1rem', width: '200px' }}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <TextField
+                        id="lastName"
+                        variant="outlined"
+                        label="Sobrenome"
+                        value={lastName}
+                        sx={{ marginRight: '1rem', width: '400px' }}
+                        onChange={(e) => setLastName(e.target.value)}
+                    />
                     <InputMask
                         mask="999.999.999-99"
                         maskChar=""
+                        value={cpf}
                         onChange={(e) => setCpf(e.target.value)}
                     >
                         {() => (
                             <TextField
-                                id='cpf'
-                                variant='outlined'
-                                label='CPF'
-                                sx={{marginRight:'1rem', width:'150px'}}
+                                id="cpf"
+                                variant="outlined"
+                                label="CPF"
+                                sx={{ marginRight: '1rem', width: '150px' }}
                             />
                         )}
                     </InputMask>
                 </Box>
-                <Box 
-                    id='fullNameParent' 
-                    sx={{display:'flex', padding:'1rem'}}>
-                    <TextField 
-                        id='name' 
-                        variant='outlined' 
-                        label='Nome Responsável' 
-                        sx={{marginRight:'1rem', width:'200px'}} 
-                        onChange={(e) => setNameParent(e.target.value)}>
-                    </TextField>
-                    <TextField 
-                        id='lastName' 
-                        variant='outlined' 
-                        label='Sobrenome Responsável' 
-                        sx={{marginRight:'1rem', width:'400px'}} 
-                        onChange={(e) => setLastNameParent(e.target.value)}>
-                    </TextField>
-                    <InputMask
-                        mask="999.999.999-99"
-                        maskChar=""
-                        onChange={(e) => setCpfParent(e.target.value)}
-                    >
-                        {() => (
-                            <TextField
-                                id='cpf'
-                                variant='outlined'
-                                label='CPF Responsável'
-                                sx={{marginRight:'1rem', width:'150px'}}
-                            />
-                        )}
-                    </InputMask>
+
+                <Box id="fullNameParent" sx={{ display: 'flex', padding: '1rem' }}>
+                    <TextField
+                        id="nameParent"
+                        variant="outlined"
+                        label="Nome Responsável"
+                        value={nameParent}
+                        sx={{ marginRight: '1rem', width: '200px' }}
+                        onChange={(e) => setNameParent(e.target.value)}
+                    />
+                    <TextField
+                        id="lastNameParent"
+                        variant="outlined"
+                        label="Sobrenome Responsável"
+                        value={lastNameParent}
+                        sx={{ marginRight: '1rem', width: '400px' }}
+                        onChange={(e) => setLastNameParent(e.target.value)}
+                    />
                 </Box>
-                <Box 
-                    id='numberInfo' 
-                    sx={{display:'flex', padding:'1rem'}}>
-                    
+
+                <Box id="numberInfo" sx={{ display: 'flex', padding: '1rem' }}>
                     <InputMask
                         mask="(99) 9999-9999"
                         maskChar=""
+                        value={telephoneNumber}
                         onChange={(e) => setTelephoneNumber(e.target.value)}
                     >
                         {() => (
                             <TextField
-                                id='telephoneNumber'
-                                variant='outlined'
-                                label='Telefone'
-                                sx={{marginRight:'1rem', width:'150px'}}
+                                id="telephoneNumber"
+                                variant="outlined"
+                                label="Telefone"
+                                sx={{ marginRight: '1rem', width: '150px' }}
                             />
                         )}
                     </InputMask>
                     <InputMask
                         mask="(99) 99999-9999"
                         maskChar=""
+                        value={cellphoneNumber}
                         onChange={(e) => setCellphoneNumber(e.target.value)}
                     >
                         {() => (
                             <TextField
-                                id='cellphoneNumber'
-                                variant='outlined'
-                                label='Celular'
-                                sx={{marginRight:'1rem', width:'155px'}}
+                                id="cellphoneNumber"
+                                variant="outlined"
+                                label="Celular"
+                                sx={{ marginRight: '1rem', width: '155px' }}
                             />
                         )}
                     </InputMask>
                 </Box>
-                <Typography 
-                    sx={{marginLeft:'1rem'}}>
-                        Selecione a unidade APAE que o profissional atende
+
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione a unidade APAE que o aluno está associado
                 </Typography>
-                <Box 
-                    id='profesionalInfo' 
-                    sx={{padding:'1rem'}}>
-                    <TextField 
-                        select id="unityApae" 
-                        variant="outlined" 
-                        label="Unidade" 
-                        sx={{width:'400px', marginRight:'1rem'}} 
-                        onChange={(e) => setUnityApae(e.target.value)}>
-                            {apaes.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
+                <Box id="schoolInfo" sx={{ padding: '1rem' }}>
+                    <TextField
+                        select
+                        id="unityApae"
+                        variant="outlined"
+                        label="Unidade"
+                        value={unityApae}
+                        sx={{ width: '400px', marginRight: '1rem' }}
+                        onChange={(e) => setUnityApae(e.target.value)}
+                    >
+                        {schools.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
                                 {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Box>
+
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione os dias da semana e horários disponíveis para atendimentos
+                </Typography>
+                <FormControl sx={{ width: '60%', padding: '1rem' }}>
+                    <InputLabel id="days-select-label">Dia e Hora</InputLabel>
+                    <Select
+                        labelId="days-select-label"
+                        id="days-select"
+                        multiple
+                        value={daysWeek}
+                        onChange={handleDaysChange}
+                        input={<OutlinedInput label="Dia e Hora" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {availableHours.map((day) => (
+                            <MenuItem key={day.value} value={day.value}>
+                                <Checkbox checked={daysWeek.includes(day.value)} />
+                                <ListItemText primary={day.label} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione as necessidades do aluno
+                </Typography>
+                <Box id="studentNeeds" sx={{ padding: '1rem' }}>
+                    <FormControl sx={{ width: '60%' }}>
+                        <InputLabel id="needs-select-label">Necessidades</InputLabel>
+                        <Select
+                            labelId="needs-select-label"
+                            id="needs-select"
+                            multiple
+                            value={selectedNecessities}
+                            onChange={handleNeedChange}
+                            input={<OutlinedInput label="Necessidades" />}
+                            renderValue={(selected) => selected.map(id => {
+                                const necessity = necessities.find(n => n.id_speciality === id);
+                                return necessity ? necessity.name : '';
+                            }).join(', ')}
+                            MenuProps={MenuProps}
+                        >
+                            {necessities.map((need) => (
+                                <MenuItem key={need.id_speciality} value={need.id_speciality}>
+                                    <Checkbox checked={selectedNecessities.includes(need.id_speciality)} />
+                                    <ListItemText primary={need.name} />
                                 </MenuItem>
                             ))}
-                    </TextField>
-                    <FormControl sx={{ width: '30%'}}>
-                <InputLabel id="days-select-label">Necessidades</InputLabel>
-                <Select
-                    labelId="days-select-label"
-                    id="days-select"
-                    multiple
-                    value={studentNeed}
-                    onChange={handleNeedChange}
-                    input={<OutlinedInput label="Necessidades" />}
-                    renderValue={(selected) => selected.join(', ')}
-                    MenuProps={MenuProps}
-                >
-                    {professionalFunction.map((need) => (
-                    <MenuItem key={need} value={need}>
-                        <Checkbox checked={studentNeed.includes(need)} />
-                        <ListItemText primary={need} />
-                    </MenuItem>
-                    ))}
-                </Select>
-                </FormControl>
+                        </Select>
+                    </FormControl>
                 </Box>
-                <Typography 
-                    sx={{marginLeft:'1rem'}}>
-                        Selecione os dias da semana e horários que estará disponível para atendimentos
-                </Typography>
-                <FormControl sx={{ width: '30%', padding: '1rem' }}>
-                <InputLabel id="days-select-label" sx={{padding:'1rem'}}>Dia e Hora</InputLabel>
-                <Select
-                    labelId="days-select-label"
-                    id="days-select"
-                    multiple
-                    value={daysWeek}
-                    onChange={handleDaysChange}
-                    input={<OutlinedInput label="Dia e Hora" />}
-                    renderValue={(selected) => selected.join(', ')}
-                    MenuProps={MenuProps}
-                >
-                    {daysOfTheWeek.map((day) => (
-                    <MenuItem key={day} value={day}>
-                        <Checkbox checked={daysWeek.includes(day)} />
-                        <ListItemText primary={day} />
-                    </MenuItem>
-                    ))}
-                </Select>
-                </FormControl>
-            </Box>
-            <Box sx={{padding:'1rem'}}>
-                <TextField
-                    multiline
-                    label='Observações'
-                    variant="outlined"
-                    sx={{width:'40%'}}
-                />
             </Box>
         </div>
     );

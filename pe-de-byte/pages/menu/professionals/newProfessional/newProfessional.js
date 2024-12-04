@@ -19,6 +19,7 @@ const MenuProps = {
 export default function NewProfessional() {
     const [specialities, setSpecialities] = useState([]);
     const [schools, setSchools] = useState([]);
+    const [availableHours, setAvailableHours] = useState([]);
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
@@ -31,15 +32,7 @@ export default function NewProfessional() {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const availableHours = [
-        { value: '1', label: 'Segunda-feira 08:00' },
-        { value: '2', label: 'Terça-feira 08:00' },
-        { value: '3', label: 'Quarta-feira 08:00' },
-        { value: '4', label: 'Quinta-feira 08:00' },
-        { value: '5', label: 'Sexta-feira 08:00' },
-    ];
-
-    // Fetching specialities and schools from the backend
+    // Fetching specialities, schools, and available hours from the backend
     useEffect(() => {
         const fetchSpecialities = async () => {
             try {
@@ -72,8 +65,26 @@ export default function NewProfessional() {
             }
         };
 
+        const fetchAvailableHours = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/hours');
+                if (response.status === 200) {
+                    setAvailableHours(response.data.map((hour) => ({
+                        value: hour.id_hours,
+                        label: `${hour.weekday} ${hour.starttime} - ${hour.endtime}`,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar horários disponíveis');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar horários disponíveis:', error);
+                setErrorMessage('Erro ao buscar horários disponíveis. Tente novamente mais tarde.');
+            }
+        };
+
         fetchSpecialities();
         fetchSchools();
+        fetchAvailableHours();
     }, []);
 
     const isDisabled =
@@ -273,10 +284,10 @@ export default function NewProfessional() {
                         renderValue={(selected) => selected.join(', ')}
                         MenuProps={MenuProps}
                     >
-                        {availableHours.map((day) => (
-                            <MenuItem key={day.value} value={day.value}>
-                                <Checkbox checked={daysWeek.includes(day.value)} />
-                                <ListItemText primary={day.label} />
+                        {availableHours.map((hour) => (
+                            <MenuItem key={hour.value} value={hour.value}>
+                                <Checkbox checked={daysWeek.includes(hour.value)} />
+                                <ListItemText primary={hour.label} />
                             </MenuItem>
                         ))}
                     </Select>

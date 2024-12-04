@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, MenuItem, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText, Typography } from '@mui/material';
 import InputMask from 'react-input-mask';
 import SaveIcon from '@mui/icons-material/Save';
@@ -17,27 +17,9 @@ const MenuProps = {
 };
 
 export default function NewStudent() {
-    const apaes = [
-        { value: '1', label: 'Criciúma' },
-        { value: '2', label: 'Tubarão' },
-        { value: '3', label: 'Lauro Müller' },
-        { value: '4', label: 'Içara' },
-    ];
-
-    const availableHours = [
-        { value: '1', label: 'Segunda-feira 08:00' },
-        { value: '2', label: 'Terça-feira 08:00' },
-        { value: '3', label: 'Quarta-feira 08:00' },
-        { value: '4', label: 'Quinta-feira 08:00' },
-        { value: '5', label: 'Sexta-feira 08:00' },
-    ];
-
-    const necessities = [
-        { value: '1', label: 'Necessidade 1' },
-        { value: '2', label: 'Necessidade 2' },
-        { value: '3', label: 'Necessidade 3' },
-    ];
-
+    const [schools, setSchools] = useState([]);
+    const [availableHours, setAvailableHours] = useState([]);
+    const [necessities, setNecessities] = useState([]);
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
@@ -52,6 +34,63 @@ export default function NewStudent() {
     const [observations, setObservations] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente mais tarde.');
+            }
+        };
+
+        const fetchAvailableHours = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/hours');
+                if (response.status === 200) {
+                    setAvailableHours(response.data.map((hour) => ({
+                        value: hour.id_hours,
+                        label: `${hour.weekday} ${hour.starttime} - ${hour.endtime}`,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar horários disponíveis');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar horários disponíveis:', error);
+                setErrorMessage('Erro ao buscar horários disponíveis. Tente novamente mais tarde.');
+            }
+        };
+
+        const fetchNecessities = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/speciality');
+                if (response.status === 200) {
+                    setNecessities(response.data.map((necessity) => ({
+                        value: necessity.id_speciality,
+                        label: necessity.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar necessidades especiais');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar necessidades especiais:', error);
+                setErrorMessage('Erro ao buscar necessidades especiais. Tente novamente mais tarde.');
+            }
+        };
+
+        fetchSchools();
+        fetchAvailableHours();
+        fetchNecessities();
+    }, []);
 
     const isDisabled =
         name === '' ||
@@ -82,7 +121,7 @@ export default function NewStudent() {
 
     const handleSave = async () => {
         const studentData = {
-            idSchool: unityApae, // ID da unidade APAE
+            idSchool: unityApae,
             firstName: name,
             lastName: lastName,
             cpf,
@@ -256,7 +295,7 @@ export default function NewStudent() {
                         sx={{ width: '400px', marginRight: '1rem' }}
                         onChange={(e) => setUnityApae(e.target.value)}
                     >
-                        {apaes.map((option) => (
+                        {schools.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                             </MenuItem>

@@ -30,6 +30,8 @@ export default function EditStudent() {
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
+    const [availableHours, setAvailableHours] = useState([]);
+    const [schools, setSchools] = useState([]);
     const [selectedNecessities, setSelectedNecessities] = useState([]);
     const [necessities, setNecessities] = useState([]);
     const [observations, setObservations] = useState('');
@@ -80,8 +82,44 @@ export default function EditStudent() {
             }
         };
 
+        const fetchAvailableHours = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/hours');
+                if (response.status === 200) {
+                    setAvailableHours(response.data.map((hour) => ({
+                        value: hour.id_hours,
+                        label: `${hour.weekday} ${hour.starttime} - ${hour.endtime}`,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar horários disponíveis');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar horários disponíveis:', error);
+                setErrorMessage('Erro ao buscar horários disponíveis. Tente novamente.');
+            }
+        };
+
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente.');
+            }
+        };
+
         fetchStudentData();
         fetchNecessities();
+        fetchAvailableHours();
+        fetchSchools();
     }, [id]);
 
     const handleDaysChange = (event) => {
@@ -99,8 +137,13 @@ export default function EditStudent() {
     };
 
     const handleSave = async () => {
+        if (!unityApae) {
+            setErrorMessage("Unidade APAE é obrigatória.");
+            return;
+        }
+
         const studentData = {
-            idSchool: unityApae ? parseInt(unityApae, 10) : null,
+            idSchool: unityApae,
             firstName: name,
             lastName: lastName,
             cpf: cpf.replace(/\D/g, ''), // Remove pontos e hífens do CPF
@@ -108,8 +151,8 @@ export default function EditStudent() {
             celular2: telephoneNumber ? telephoneNumber.replace(/\D/g, '') : null, // Remove caracteres não numéricos do telefone ou define como null
             responsavel: `${nameParent} ${lastNameParent}`,
             obs: observations,
-            idAvalilablehours: daysWeek.length > 0 ? daysWeek : null, // Verifica se existem horários disponíveis antes de enviar
-            specialits: selectedNecessities.length > 0 ? selectedNecessities : null, // Verifica se existem necessidades antes de enviar
+            idAvalilablehours: daysWeek.length > 0 ? daysWeek.map(String) : [], // Envia um array de strings dos horários disponíveis
+            specialits: selectedNecessities.length > 0 ? selectedNecessities.map(String) : [], // Envia um array de strings das necessidades selecionadas
         };
 
         try {
@@ -271,6 +314,51 @@ export default function EditStudent() {
                         )}
                     </InputMask>
                 </Box>
+
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione a unidade APAE que o aluno está associado
+                </Typography>
+                <Box id="schoolInfo" sx={{ padding: '1rem' }}>
+                    <TextField
+                        select
+                        id="unityApae"
+                        variant="outlined"
+                        label="Unidade"
+                        value={unityApae}
+                        sx={{ width: '400px', marginRight: '1rem' }}
+                        onChange={(e) => setUnityApae(e.target.value)}
+                    >
+                        {schools.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Box>
+
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione os dias da semana e horários disponíveis para atendimentos
+                </Typography>
+                <FormControl sx={{ width: '60%', padding: '1rem' }}>
+                    <InputLabel id="days-select-label">Dia e Hora</InputLabel>
+                    <Select
+                        labelId="days-select-label"
+                        id="days-select"
+                        multiple
+                        value={daysWeek}
+                        onChange={handleDaysChange}
+                        input={<OutlinedInput label="Dia e Hora" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {availableHours.map((day) => (
+                            <MenuItem key={day.value} value={day.value}>
+                                <Checkbox checked={daysWeek.includes(day.value)} />
+                                <ListItemText primary={day.label} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
 
                 <Typography sx={{ marginLeft: '1rem' }}>
                     Selecione as necessidades do aluno

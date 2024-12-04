@@ -1,11 +1,10 @@
-// import * as React from 'react';
-import { Box, Button, TextField, MenuItem, FormGroup, FormControlLabel, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText } from "@mui/material";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, TextField, MenuItem, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText, Typography } from "@mui/material";
 import InputMask from 'react-input-mask';
-import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import axios from 'axios';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -19,64 +18,177 @@ const MenuProps = {
 };
 
 export default function EditProfessional() {
+    const router = useRouter();
+    const { id } = router.query;
 
-    const apaes = [
-        {
-          value: 'Criciuma',
-          label: 'Criciúma',
-        },
-        {
-          value: 'Tubarao',
-          label: 'Tubarão',
-        },
-        {
-          value: 'Lauro Muller',
-          label: 'Lauro Müller',
-        },
-        {
-          value: 'Icara',
-          label: 'Içara',
-        },
-    ];
-
-    const daysOfTheWeek = [
-        'Segunda-feira 08:00',
-        'Terça-feira 08:00',
-        'Quarta-feira 08:00',
-        'Quinta-feira 08:00',
-        'Sexta-feira 08:00',
-    ];
-
+    const [schools, setSchools] = useState([]);
+    const [specialities, setSpecialities] = useState([]);
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
-    const [telephoneNumber, setTelephoneNumber] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
-    const [professionalFunction, setProfessionalFunction] = useState('');
+    const [specialityId, setSpecialityId] = useState('');
+    const [observations, setObservations] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const isDisabled = name === '' || lastName ==='' || cpf === '' || telephoneNumber === '' || cellphoneNumber === '' || unityApae === '' || professionalFunction === '';
+    const availableHours = [
+        { value: '1', label: 'Segunda-feira 08:00' },
+        { value: '2', label: 'Terça-feira 08:00' },
+        { value: '3', label: 'Quarta-feira 08:00' },
+        { value: '4', label: 'Quinta-feira 08:00' },
+        { value: '5', label: 'Sexta-feira 08:00' },
+    ];
+
+    useEffect(() => {
+        if (!id) {
+            setLoading(false);
+            return;
+        }
+
+        const fetchProfessional = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/professionals/${id}`);
+                
+                if (response.status !== 200) {
+                    throw new Error(`Erro ao buscar profissional: ${response.statusText}`);
+                }
+
+                const data = response.data;
+
+                // Preenche os estados com os dados recebidos
+                setName(data.firstName || "");
+                setLastName(data.lastName || "");
+                setCpf(data.cpf || "");
+                setCellphoneNumber(data.celular || "");
+                setUnityApae(data.idSchool || "");
+                setDaysWeek(data.availableHoursId || []);
+                setSpecialityId(data.specialityId || "");
+                setObservations(data.obs || "");
+            } catch (error) {
+                console.error("Erro ao buscar dados do profissional:", error);
+                setErrorMessage("Erro ao buscar dados do profissional. Verifique se o servidor está disponível e tente novamente.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente mais tarde.');
+            }
+        };
+
+        const fetchSpecialities = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/speciality');
+                if (response.status === 200) {
+                    setSpecialities(response.data);
+                } else {
+                    throw new Error('Erro ao buscar especialidades');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar especialidades:', error);
+                setErrorMessage('Erro ao buscar especialidades. Tente novamente mais tarde.');
+            }
+        };
+
+        fetchProfessional();
+        fetchSchools();
+        fetchSpecialities();
+    }, [id]);
+
+    const isDisabled =
+        name === '' ||
+        lastName === '' ||
+        cpf === '' ||
+        cellphoneNumber === '' ||
+        unityApae === '' ||
+        specialityId === '' ||
+        daysWeek.length === 0;
 
     const handleDaysChange = (event) => {
         const {
-          target: { value },
+            target: { value },
         } = event;
-        setDaysWeek(
-          // On autofill, we get a stringified value
-          typeof value === 'string' ? value.split(',') : value
-        );
+        setDaysWeek(typeof value === 'string' ? value.split(',') : value);
+    };
+
+    const handleSave = async () => {
+        const updatedProfessional = {
+            idSchool: unityApae,
+            firstName: name,
+            lastName: lastName,
+            cpf,
+            celular: cellphoneNumber,
+            specialityId,
+            AvailableHoursId: daysWeek,
+            obs: observations,
+        };
+
+        console.log("Dados que estão sendo enviados para atualização:", updatedProfessional);
+
+        try {
+            const response = await axios.put(
+                `http://localhost:8080/api/professionals/${id}`,
+                updatedProfessional
+            );
+
+            if (response.status === 200) {
+                setSuccessMessage('Profissional atualizado com sucesso!');
+                setErrorMessage('');
+                router.push('../professionals');
+            } else {
+                throw new Error(`Erro ao atualizar profissional: ${response.statusText}`);
+            }
+        } catch (error) {
+            const errorData = error.response?.data || error.message;
+            setErrorMessage(`Erro ao atualizar profissional: ${errorData}`);
+            console.error('Erro ao atualizar profissional:', errorData);
+        }
     };
     
+    if (loading) {
+        return (
+            <Typography variant="body1" sx={{ margin: '10px' }}>
+                Carregando...
+            </Typography>
+        );
+    }
+
     return (
         <div>
+            {successMessage && (
+                <Typography variant="body1" color="success" sx={{ margin: '10px' }}>
+                    {successMessage}
+                </Typography>
+            )}
+            {errorMessage && (
+                <Typography variant="body1" color="error" sx={{ margin: '10px' }}>
+                    {errorMessage}
+                </Typography>
+            )}
             <div 
                 className='headerProfessionalsCreate' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>
                 <Typography 
                     variant="h5" 
                     gutterBottom>
-                        Cadastro de Profissional
+                        Editar Profissional
                 </Typography>
                 <Button 
                     id='backProfessional'
@@ -91,39 +203,47 @@ export default function EditProfessional() {
                     id="savePostProfessional" 
                     variant="contained" 
                     size="large" 
-                    href="" 
+                    onClick={handleSave} 
                     startIcon={<SaveIcon />} 
                     sx={{ marginLeft:'1rem' }}
                     disabled={isDisabled}>
                         Salvar
                 </Button>
             </div>
-            <Box 
-                id='createProfessionalForm'>
-                <Box 
-                    id='fullName' 
-                    sx={{display:'flex', padding:'1rem'}}>
+            <Box id='editProfessionalForm'>
+                <Box id='idProfessional' sx={{ display: 'flex', padding: '1rem' }}>
+                    <TextField 
+                        id='id' 
+                        variant='outlined' 
+                        label='ID do Profissional' 
+                        value={id}
+                        sx={{ marginRight: '1rem', width: '200px' }} 
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                    />
+                </Box>
+                <Box id='fullNameProfessional' sx={{ display: 'flex', padding: '1rem' }}>
                     <TextField 
                         id='name' 
                         variant='outlined' 
                         label='Nome' 
-                        sx={{marginRight:'1rem', width:'200px'}} 
-                        onChange={(e) => setName(e.target.value)}>
-                    </TextField>
+                        value={name}
+                        sx={{ marginRight: '1rem', width: '200px' }} 
+                        onChange={(e) => setName(e.target.value)}
+                    />
                     <TextField 
                         id='lastName' 
                         variant='outlined' 
                         label='Sobrenome' 
-                        sx={{width:'400px'}} 
-                        onChange={(e) => setLastName(e.target.value)}>
-                    </TextField>
-                </Box>
-                <Box 
-                    id='numberInfo' 
-                    sx={{display:'flex', padding:'1rem'}}>
+                        value={lastName}
+                        sx={{ marginRight: '1rem', width: '400px' }} 
+                        onChange={(e) => setLastName(e.target.value)}
+                    />
                     <InputMask
                         mask="999.999.999-99"
                         maskChar=""
+                        value={cpf}
                         onChange={(e) => setCpf(e.target.value)}
                     >
                         {() => (
@@ -131,27 +251,16 @@ export default function EditProfessional() {
                                 id='cpf'
                                 variant='outlined'
                                 label='CPF'
-                                sx={{marginRight:'1rem', width:'150px'}}
+                                sx={{ marginRight: '1rem', width: '150px' }}
                             />
                         )}
                     </InputMask>
-                    <InputMask
-                        mask="(99) 9999-9999"
-                        maskChar=""
-                        onChange={(e) => setTelephoneNumber(e.target.value)}
-                    >
-                        {() => (
-                            <TextField
-                                id='telephoneNumber'
-                                variant='outlined'
-                                label='Telefone'
-                                sx={{marginRight:'1rem', width:'150px'}}
-                            />
-                        )}
-                    </InputMask>
+                </Box>
+                <Box id='numberInfo' sx={{ display: 'flex', padding: '1rem' }}>
                     <InputMask
                         mask="(99) 99999-9999"
                         maskChar=""
+                        value={cellphoneNumber}
                         onChange={(e) => setCellphoneNumber(e.target.value)}
                     >
                         {() => (
@@ -159,68 +268,78 @@ export default function EditProfessional() {
                                 id='cellphoneNumber'
                                 variant='outlined'
                                 label='Celular'
-                                sx={{width:'155px'}}
+                                sx={{ marginRight: '1rem', width: '155px' }}
                             />
                         )}
                     </InputMask>
                 </Box>
-                <Typography 
-                    sx={{marginLeft:'1rem'}}>
-                        Selecione a unidade APAE que o profissional atende
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione a unidade APAE que o profissional atende
                 </Typography>
-                <Box 
-                    id='profesionalInfo' 
-                    sx={{padding:'1rem'}}>
-                    <TextField 
-                        select id="unityApae" 
-                        variant="outlined" 
-                        label="Unidade" 
-                        sx={{width:'400px', marginRight:'1rem'}} 
-                        onChange={(e) => setUnityApae(e.target.value)}>
-                            {apaes.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
+                <Box id='professionalInfo' sx={{ padding: '1rem' }}>
+                    <TextField
+                        select
+                        id="unityApae"
+                        variant="outlined"
+                        label="Unidade"
+                        value={unityApae}
+                        sx={{ width: '400px', marginRight: '1rem' }}
+                        onChange={(e) => setUnityApae(e.target.value)}
+                    >
+                        {schools.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
                                 {option.label}
-                                </MenuItem>
-                            ))}
+                            </MenuItem>
+                        ))}
                     </TextField>
-                    <TextField 
-                        id="professionalFunction" 
-                        variant="outlined" 
-                        label="Especialidade" 
-                        onChange={(e) => setProfessionalFunction(e.target.value)}>
+                    <TextField
+                        select
+                        id="specialityId"
+                        variant="outlined"
+                        label="Especialidade"
+                        value={specialityId}
+                        sx={{ width: '400px' }}
+                        onChange={(e) => setSpecialityId(e.target.value)}
+                    >
+                        {specialities.map((speciality) => (
+                            <MenuItem key={speciality.id_speciality} value={speciality.id_speciality}>
+                                {speciality.name}
+                            </MenuItem>
+                        ))}
                     </TextField>
                 </Box>
-                <Typography 
-                    sx={{marginLeft:'1rem'}}>
-                        Selecione os dias da semana e horários que estará disponível para atendimentos
+                <Typography sx={{ marginLeft: '1rem' }}>
+                    Selecione os dias da semana e horários disponíveis para atendimentos
                 </Typography>
                 <FormControl sx={{ width: '30%', padding: '1rem' }}>
-                <InputLabel id="days-select-label" sx={{padding:'1rem'}}>Dia e Hora</InputLabel>
-                <Select
-                    labelId="days-select-label"
-                    id="days-select"
-                    multiple
-                    value={daysWeek}
-                    onChange={handleDaysChange}
-                    input={<OutlinedInput label="Dia e Hora" />}
-                    renderValue={(selected) => selected.join(', ')}
-                    MenuProps={MenuProps}
-                >
-                    {daysOfTheWeek.map((day) => (
-                    <MenuItem key={day} value={day}>
-                        <Checkbox checked={daysWeek.includes(day)} />
-                        <ListItemText primary={day} />
-                    </MenuItem>
-                    ))}
-                </Select>
+                    <InputLabel id="days-select-label">Dia e Hora</InputLabel>
+                    <Select
+                        labelId="days-select-label"
+                        id="days-select"
+                        multiple
+                        value={daysWeek}
+                        onChange={handleDaysChange}
+                        input={<OutlinedInput label="Dia e Hora" />}
+                        renderValue={(selected) => selected.join(', ')}
+                        MenuProps={MenuProps}
+                    >
+                        {availableHours.map((day) => (
+                            <MenuItem key={day.value} value={day.value}>
+                                <Checkbox checked={daysWeek.includes(day.value)} />
+                                <ListItemText primary={day.label} />
+                            </MenuItem>
+                        ))}
+                    </Select>
                 </FormControl>
             </Box>
-            <Box sx={{padding:'1rem'}}>
+            <Box sx={{ padding: '1rem' }}>
                 <TextField
                     multiline
-                    label='Observações'
+                    label="Observações"
                     variant="outlined"
-                    sx={{width:'40%'}}
+                    value={observations}
+                    sx={{ width: '40%' }}
+                    onChange={(e) => setObservations(e.target.value)}
                 />
             </Box>
         </div>

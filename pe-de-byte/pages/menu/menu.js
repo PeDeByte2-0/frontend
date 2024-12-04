@@ -11,44 +11,14 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import HomeIcon from '@mui/icons-material/Home';
 import EventIcon from '@mui/icons-material/Event';
 import useAuth from '../hooks/useAuth';
+import MenuBar from '../../components/menuBar';
 
 export default function Menu() {
 
     useAuth();
     return (
         <div>
-            <AppBar sx={{ height: '17%',  backgroundColor: '#61c7e7' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-				    <img src='/apae.png' style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }} alt='Logo'></img>
-                    <div className="options" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                        <Tooltip title="Página inicial">
-                            <IconButton aria-label="menu" size="large" href="./menu">
-                                <HomeIcon fontSize="inherit" sx={{color:'#000000'}}></HomeIcon>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Agendamentos">
-                            <IconButton aria-label="schedule" size="large" href="./schedule/schedule">
-                                <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Profissionais">
-                            <IconButton aria-label="professionals" size="large" href="./professionals/professionals">
-                                <GroupsIcon fontSize="inherit" sx={{color:'#000000'}}></GroupsIcon>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Alunos">
-                            <IconButton aria-label="students" size="large" href="./students/students">
-                                <PersonIcon fontSize="inherit" sx={{color:'#000000'}}></PersonIcon>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Sair">
-                            <IconButton aria-label="logout" size="large" href="../">
-                                <LogoutIcon fontSize="inherit" sx={{color:'#000000'}}></LogoutIcon>
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                </Box>
-			</AppBar>
+            <MenuBar />
             <Typography variant="h5" gutterBottom sx={{ margin:'10% 10% 5% 10%' }}>
 				Olá! Seja bem-vindo ao menu
 			</Typography>

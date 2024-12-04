@@ -14,6 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import MenuBar from '../../../components/menuBar';
 
 export default function Professionals() {
     const router = useRouter();
@@ -111,42 +112,7 @@ export default function Professionals() {
 
     return (
         <div>
-            <AppBar sx={{ height: '17%', backgroundColor: '#61c7e7' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                    <img
-                        src='/apae.png'
-                        style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }}
-                        alt='Logo'
-                    />
-                    <div className="options" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                        <Tooltip title="Página inicial">
-                            <IconButton aria-label="menu" size="large" href="../menu">
-                                <HomeIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Agendamentos">
-                            <IconButton aria-label="schedule" size="large" href="../schedule/schedule">
-                                <EventIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Profissionais">
-                            <IconButton aria-label="professionals" size="large" href="./professionals">
-                                <GroupsIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Alunos">
-                            <IconButton aria-label="students" size="large" href="../students/students">
-                                <PersonIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Sair">
-                            <IconButton aria-label="logout" size="large" href="../../">
-                                <LogoutIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                </Box>
-            </AppBar>
+            <MenuBar />
             <div className='headerProfessionals' style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop: '8rem' }}>
                 <Typography variant="h5" gutterBottom>
                     Profissionais

@@ -29,7 +29,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="menu" 
                         size="large"
-                         href="../menu"
+                         href="../menu/menu"
                     >
                         <HomeIcon 
                             fontSize="inherit" 
@@ -38,7 +38,7 @@ export default function MenuBar() {
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Agendamentos">
-                    <IconButton aria-label="schedule" size="large" href="./schedule">
+                    <IconButton aria-label="schedule" size="large" href="./schedule/schedule">
                         <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
                     </IconButton>
                 </Tooltip>

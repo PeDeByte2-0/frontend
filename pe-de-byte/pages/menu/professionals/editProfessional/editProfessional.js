@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, TextField, MenuItem, FormControl, InputLabel, Checkbox, Select, OutlinedInput, ListItemText } from "@mui/material";
+import { Box, Button, TextField, MenuItem, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText, Typography } from "@mui/material";
 import InputMask from 'react-input-mask';
-import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -22,26 +22,25 @@ export default function EditProfessional() {
     const { id } = router.query;
 
     const apaes = [
-        { value: 'Criciuma', label: 'Criciúma' },
-        { value: 'Tubarao', label: 'Tubarão' },
-        { value: 'Lauro Muller', label: 'Lauro Müller' },
-        { value: 'Icara', label: 'Içara' },
+        { value: '1', label: 'Criciúma' },
+        { value: '2', label: 'Tubarão' },
+        { value: '3', label: 'Lauro Müller' },
+        { value: '4', label: 'Içara' },
     ];
 
-    const professionalFunctions = [
-        'Fisioterapeuta',
-        'Terapeuta Ocupacional',
-        'Psicólogo',
-        'Fonoaudiólogo',
-        'Educador Físico',
+    const availableHours = [
+        { value: '1', label: 'Segunda-feira 08:00' },
+        { value: '2', label: 'Terça-feira 08:00' },
+        { value: '3', label: 'Quarta-feira 08:00' },
+        { value: '4', label: 'Quinta-feira 08:00' },
+        { value: '5', label: 'Sexta-feira 08:00' },
     ];
 
-    const daysOfTheWeek = [
-        'Segunda-feira 08:00',
-        'Terça-feira 08:00',
-        'Quarta-feira 08:00',
-        'Quinta-feira 08:00',
-        'Sexta-feira 08:00',
+    const specialities = [
+        { value: '1', label: 'Fonoaudiólogo' },
+        { value: '2', label: 'Psicólogo' },
+        { value: '3', label: 'Fisioterapeuta' },
+        { value: '4', label: 'Terapeuta Ocupacional' },
     ];
 
     const [name, setName] = useState('');
@@ -51,8 +50,10 @@ export default function EditProfessional() {
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
-    const [professionalFunction, setProfessionalFunction] = useState('');
+    const [specialityId, setSpecialityId] = useState('');
+    const [observations, setObservations] = useState('');
     const [loading, setLoading] = useState(true);
+    const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
@@ -63,21 +64,14 @@ export default function EditProfessional() {
 
         const fetchProfessional = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/professionals/${id}`);
+                const response = await axios.get(`http://localhost:8080/api/professionals/${id}`);
                 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("Erro na resposta da API:", errorText);
-                    throw new Error(`Erro na API: ${response.statusText}`);
+                if (response.status !== 200) {
+                    throw new Error(`Erro ao buscar profissional: ${response.statusText}`);
                 }
 
-                const responseText = await response.text();
-                if (responseText.trim() === "") {
-                    throw new Error("Resposta vazia da API");
-                }
+                const data = response.data;
 
-                const data = JSON.parse(responseText);
-                
                 // Preenche os estados com os dados recebidos
                 setName(data.firstName || "");
                 setLastName(data.lastName || "");
@@ -85,8 +79,9 @@ export default function EditProfessional() {
                 setTelephoneNumber(data.telefone || "");
                 setCellphoneNumber(data.celular || "");
                 setUnityApae(data.idSchool || "");
-                setDaysWeek(data.availableHours || []);
-                setProfessionalFunction(data.specialityId || "");
+                setDaysWeek(data.availableHoursId || []);
+                setSpecialityId(data.specialityId || "");
+                setObservations(data.obs || "");
             } catch (error) {
                 console.error("Erro ao buscar dados do profissional:", error);
                 setErrorMessage("Erro ao buscar dados do profissional. Verifique se o servidor está disponível e tente novamente.");
@@ -98,27 +93,56 @@ export default function EditProfessional() {
         fetchProfessional();
     }, [id]);
 
-    const isDisabled = name === '' || 
-                       lastName ==='' || 
-                       cpf === '' || 
-                       telephoneNumber === '' || 
-                       cellphoneNumber === '' || 
-                       unityApae === '' || 
-                       professionalFunction === '' || 
-                       daysWeek.length === 0;
+    const isDisabled =
+        name === '' ||
+        lastName === '' ||
+        cpf === '' ||
+        telephoneNumber === '' ||
+        cellphoneNumber === '' ||
+        unityApae === '' ||
+        specialityId === '' ||
+        daysWeek.length === 0;
 
     const handleDaysChange = (event) => {
         const {
-          target: { value },
+            target: { value },
         } = event;
-        setDaysWeek(
-          typeof value === 'string' ? value.split(',') : value
-        );
+        setDaysWeek(typeof value === 'string' ? value.split(',') : value);
     };
 
-    const handleSave = () => {
-        console.log("Salvando dados do profissional...");
-        // Aqui você pode adicionar a lógica para salvar os dados do profissional no backend
+    const handleSave = async () => {
+        const updatedProfessional = {
+            idSchool: unityApae, // ID da unidade APAE (string)
+            firstName: name, // Nome do profissional
+            lastName: lastName, // Sobrenome do profissional
+            cpf, // CPF do profissional
+            celular: cellphoneNumber, // Número do celular do profissional
+            telefone: telephoneNumber, // Telefone do profissional
+            specialityId, // ID da especialidade (string)
+            AvailableHoursId: daysWeek, // IDs dos horários disponíveis (array de strings)
+            obs: observations, // Observações adicionais
+        };
+
+        console.log("Dados que estão sendo enviados para atualização:", updatedProfessional);
+
+        try {
+            const response = await axios.put(
+                `http://localhost:8080/api/professionals/${id}`,
+                updatedProfessional
+            );
+
+            if (response.status === 200) {
+                setSuccessMessage('Profissional atualizado com sucesso!');
+                setErrorMessage('');
+                router.push('../professionals');
+            } else {
+                throw new Error(`Erro ao atualizar profissional: ${response.statusText}`);
+            }
+        } catch (error) {
+            const errorData = error.response?.data || error.message;
+            setErrorMessage(`Erro ao atualizar profissional: ${errorData}`);
+            console.error('Erro ao atualizar profissional:', errorData);
+        }
     };
     
     if (loading) {
@@ -131,6 +155,11 @@ export default function EditProfessional() {
 
     return (
         <div>
+            {successMessage && (
+                <Typography variant="body1" color="success" sx={{ margin: '10px' }}>
+                    {successMessage}
+                </Typography>
+            )}
             {errorMessage && (
                 <Typography variant="body1" color="error" sx={{ margin: '10px' }}>
                     {errorMessage}
@@ -246,13 +275,13 @@ export default function EditProfessional() {
                     Selecione a unidade APAE que o profissional atende
                 </Typography>
                 <Box id='professionalInfo' sx={{ padding: '1rem' }}>
-                    <TextField 
-                        select 
-                        id="unityApae" 
-                        variant="outlined" 
-                        label="Unidade" 
+                    <TextField
+                        select
+                        id="unityApae"
+                        variant="outlined"
+                        label="Unidade"
                         value={unityApae}
-                        sx={{ width: '400px', marginRight: '1rem' }} 
+                        sx={{ width: '400px', marginRight: '1rem' }}
                         onChange={(e) => setUnityApae(e.target.value)}
                     >
                         {apaes.map((option) => (
@@ -263,16 +292,16 @@ export default function EditProfessional() {
                     </TextField>
                     <TextField
                         select
-                        id="professionalFunction"
+                        id="specialityId"
                         variant="outlined"
                         label="Especialidade"
-                        value={professionalFunction}
+                        value={specialityId}
                         sx={{ width: '400px' }}
-                        onChange={(e) => setProfessionalFunction(e.target.value)}
+                        onChange={(e) => setSpecialityId(e.target.value)}
                     >
-                        {professionalFunctions.map((func) => (
-                            <MenuItem key={func} value={func}>
-                                {func}
+                        {specialities.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -292,14 +321,24 @@ export default function EditProfessional() {
                         renderValue={(selected) => selected.join(', ')}
                         MenuProps={MenuProps}
                     >
-                        {daysOfTheWeek.map((day) => (
-                            <MenuItem key={day} value={day}>
-                                <Checkbox checked={daysWeek.includes(day)} />
-                                <ListItemText primary={day} />
+                        {availableHours.map((day) => (
+                            <MenuItem key={day.value} value={day.value}>
+                                <Checkbox checked={daysWeek.includes(day.value)} />
+                                <ListItemText primary={day.label} />
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
+            </Box>
+            <Box sx={{ padding: '1rem' }}>
+                <TextField
+                    multiline
+                    label="Observações"
+                    variant="outlined"
+                    value={observations}
+                    sx={{ width: '40%' }}
+                    onChange={(e) => setObservations(e.target.value)}
+                />
             </Box>
         </div>
     );

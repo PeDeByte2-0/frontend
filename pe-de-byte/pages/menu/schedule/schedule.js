@@ -1,103 +1,26 @@
 import * as React from 'react';
-import { Box, Button, IconButton, TextField, Tooltip } from "@mui/material";
-import AppBar from '@mui/material/AppBar';
+import { Box, Button, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import LogoutIcon from '@mui/icons-material/Logout';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
-import HomeIcon from '@mui/icons-material/Home';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import EventIcon from '@mui/icons-material/Event';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EventNoteIcon from '@mui/icons-material/EventNote';
+import MenuBar from '../../components/menuBar';
 
 export default function Schedule() {
+    const [weekDay, setWeekDay] = React.useState('');
+
+    const handleChange = (event) => {
+        setWeekDay(event.target.value);
+    };
     return (
         <div>
-            <AppBar 
-                sx={{ height: '17%',  backgroundColor: '#61c7e7' }}
-            >
-                <Box 
-                    sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}
-                >
-				    <img 
-                        src='/apae.png' 
-                        style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }} 
-                        alt='Logo'
-                    >
-                    </img>
-                    <div 
-                        className="options" 
-                        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
-                    >
-                        <Tooltip 
-                            title="Página inicial"
-                        >
-                            <IconButton 
-                                aria-label="menu" 
-                                size="large"
-                                 href="../menu"
-                            >
-                                <HomeIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Agendamentos">
-                            <IconButton aria-label="schedule" size="large" href="./schedule">
-                                <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip 
-                            title="Profissionais"
-                        >
-                            <IconButton 
-                                aria-label="professionals" 
-                                size="large" 
-                                href="../professionals/professionals"
-                            >
-                                <GroupsIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip 
-                            title="Alunos"
-                        >
-                            <IconButton 
-                                aria-label="students" 
-                                size="large" 
-                                href="../students/students"
-                            >
-                                <PersonIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip 
-                            title="Sair"
-                        >
-                            <IconButton 
-                                aria-label="logout" 
-                                size="large" 
-                                href="../../"
-                            >
-                                <LogoutIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                </Box>
-			</AppBar>
+            <MenuBar />
             <div 
                 className='headerProfessionals' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop:'8rem' }}
@@ -119,19 +42,46 @@ export default function Schedule() {
                     Cadastrar
                 </Button>
             </div>
-            <Box
-                id='searchProfessional'
-                sx={{ marginLeft:'1rem', marginRight:'1rem', display:'flex', alignItems:'center' }}
-            >
-                <TextField variant='outlined' label='Pesquisa por Agendamento' sx={{width:'95%'}}></TextField>
-                <Tooltip title='Pesquisar'>
-                    <Button 
-                        variant='contained' 
-                        startIcon={<SearchIcon sx={{width:'35px', height:'35px'}}/>} 
-                        sx={{ marginLeft:'auto', width:'50px' }}
-                    />
-                </Tooltip>
-            </Box>
+
+                <form onSubmit='' >
+                    <Box
+                    id='searchProfessional'
+                    sx={{ marginLeft:'1rem', marginRight:'1rem', display:'flex', alignItems:'center' }}
+                >
+                    <TextField variant='outlined' label='Pesquisa por Nome' sx={{width:'40%'}}></TextField>
+                    <Box
+                                            sx={{ width:'100%', marginLeft:'10px'}}  
+    >
+                        <InputLabel id="demo-simple-select-helper-label">Dia da semana</InputLabel>
+                                <Select
+                                labelId="demo-simple-select-helper-label"
+                                id="demo-simple-select-helper"
+                                value={weekDay}
+                                onChange={handleChange}
+                                displayEmpty
+                                >
+                            <MenuItem value="">
+                                <em>nenhuma</em>    
+                            </MenuItem>
+                            <MenuItem value={-1} selected={true}>Todos</MenuItem>
+                            <MenuItem value={0}>Segunda-Feira</MenuItem>
+                            <MenuItem value={1}>Terça-Feira</MenuItem>
+                            <MenuItem value={2}>Quarta-Feira</MenuItem>
+                            <MenuItem value={3}>Quinta-Feira</MenuItem>
+                            <MenuItem value={4}>Sexta-Feira</MenuItem>
+                            <MenuItem value={5}>Sábado</MenuItem>
+                            <MenuItem value={6}>Domingo</MenuItem>
+                        </Select>
+                    </Box>
+                    <Tooltip title='Pesquisar'>
+                        <Button 
+                            variant='contained' 
+                            startIcon={<SearchIcon sx={{width:'35px', height:'35px'}}/>} 
+                            sx={{ marginLeft:'auto', width:'50px' }}
+                        />
+                    </Tooltip>
+                </Box>
+            </form>
             <Card 
                 variant='outlined' 
                     sx={{ backgroundColor:'#c5ecf8', margin:'10px 10px' }}

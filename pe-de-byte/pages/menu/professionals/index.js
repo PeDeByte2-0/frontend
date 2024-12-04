@@ -56,7 +56,7 @@ export default function Professionals() {
     // Função para editar um profissional
     const handleEdit = (id) => {
         router.push({
-            pathname: '/menu/professionals/editProfessional/editProfessional',
+            pathname: '/menu/professionals/editProfessional',
             query: { id }
         });
     };
@@ -121,7 +121,7 @@ export default function Professionals() {
                     id="postProfessional"
                     variant="contained"
                     size="large"
-                    href="./newProfessional/newProfessional"
+                    href="/menu/professionals/newProfessional"
                     startIcon={<AddIcon />}
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                 >

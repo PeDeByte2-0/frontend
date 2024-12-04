@@ -73,7 +73,7 @@ export default function Students() {
     // Função para editar um estudante
     const handleEdit = (id) => {
         router.push({
-            pathname: '/menu/students/editStudent/editStudent',
+            pathname: '/menu/students/editStudent',
             query: { id }
         });
     };
@@ -136,7 +136,7 @@ export default function Students() {
                     id="postStudent"
                     variant="contained"
                     size="large"
-                    href="./newStudent/newStudent"
+                    href="/menu/students/newStudent"
                     startIcon={<AddIcon />}
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                 >
@@ -177,7 +177,7 @@ export default function Students() {
                                     id="studentScheduling"
                                     variant="outlined"
                                     size="large"
-                                    href="./schedulingStudent/schedulingStudent"
+                                    href="./schedulingStudent"
                                     startIcon={<EventNoteIcon />}
                                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                                 >

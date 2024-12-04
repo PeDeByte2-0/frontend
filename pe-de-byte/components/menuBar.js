@@ -29,7 +29,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="menu" 
                         size="large"
-                         href="../menu/menu"
+                         href="/menu"
                     >
                         <HomeIcon 
                             fontSize="inherit" 
@@ -38,7 +38,7 @@ export default function MenuBar() {
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Agendamentos">
-                    <IconButton aria-label="schedule" size="large" href="./schedule/schedule">
+                    <IconButton aria-label="schedule" size="large" href="/menu/schedule">
                         <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
                     </IconButton>
                 </Tooltip>
@@ -48,7 +48,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="professionals" 
                         size="large" 
-                        href="../professionals/professionals"
+                        href="/menu/professionals"
                     >
                         <GroupsIcon 
                             fontSize="inherit" 
@@ -62,7 +62,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="students" 
                         size="large" 
-                        href="../students/students"
+                        href="/menu/students"
                     >
                         <PersonIcon 
                             fontSize="inherit" 
@@ -76,7 +76,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="logout" 
                         size="large" 
-                        href="../../"
+                        href="/"
                     >
                         <LogoutIcon 
                             fontSize="inherit" 

@@ -1,11 +1,21 @@
 import { AppBar, Box, IconButton, Tooltip } from "@mui/material";
 import HomeIcon from '@mui/icons-material/Home';
-
+import { useRouter } from 'next/router';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
 import EventIcon from '@mui/icons-material/Event';
+import Cookies from 'js-cookie';
 export default function MenuBar() {
+
+    // Função para realizar logout
+    const router = useRouter();
+    
+    const handleLogout = () => {
+        Cookies.remove('token'); // Remove o token do cookie
+        router.push('/'); // Redireciona para a página de login
+    };
+
     return (
         <AppBar 
         sx={{ height: '17%',  backgroundColor: '#61c7e7' }}
@@ -76,7 +86,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="logout" 
                         size="large" 
-                        href="../../"
+                         onClick={handleLogout}
                     >
                         <LogoutIcon 
                             fontSize="inherit" 

@@ -10,7 +10,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EventNoteIcon from '@mui/icons-material/EventNote';
-import MenuBar from '../../components/menuBar';
+import MenuBar from '../../../components/menuBar';
 
 export default function Schedule() {
     const [weekDay, setWeekDay] = React.useState('');
@@ -50,7 +50,7 @@ export default function Schedule() {
                 >
                     <TextField variant='outlined' label='Pesquisa por Nome' sx={{width:'40%'}}></TextField>
                     <Box
-                                            sx={{ width:'100%', marginLeft:'10px'}}  
+                        sx={{ width:'100%', marginLeft:'10px'}}  
     >
                         <InputLabel id="demo-simple-select-helper-label">Dia da semana</InputLabel>
                                 <Select

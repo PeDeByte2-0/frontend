@@ -21,32 +21,11 @@ export default function EditProfessional() {
     const router = useRouter();
     const { id } = router.query;
 
-    const apaes = [
-        { value: '1', label: 'Criciúma' },
-        { value: '2', label: 'Tubarão' },
-        { value: '3', label: 'Lauro Müller' },
-        { value: '4', label: 'Içara' },
-    ];
-
-    const availableHours = [
-        { value: '1', label: 'Segunda-feira 08:00' },
-        { value: '2', label: 'Terça-feira 08:00' },
-        { value: '3', label: 'Quarta-feira 08:00' },
-        { value: '4', label: 'Quinta-feira 08:00' },
-        { value: '5', label: 'Sexta-feira 08:00' },
-    ];
-
-    const specialities = [
-        { value: '1', label: 'Fonoaudiólogo' },
-        { value: '2', label: 'Psicólogo' },
-        { value: '3', label: 'Fisioterapeuta' },
-        { value: '4', label: 'Terapeuta Ocupacional' },
-    ];
-
+    const [schools, setSchools] = useState([]);
+    const [specialities, setSpecialities] = useState([]);
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
-    const [telephoneNumber, setTelephoneNumber] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
@@ -55,6 +34,14 @@ export default function EditProfessional() {
     const [loading, setLoading] = useState(true);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+
+    const availableHours = [
+        { value: '1', label: 'Segunda-feira 08:00' },
+        { value: '2', label: 'Terça-feira 08:00' },
+        { value: '3', label: 'Quarta-feira 08:00' },
+        { value: '4', label: 'Quinta-feira 08:00' },
+        { value: '5', label: 'Sexta-feira 08:00' },
+    ];
 
     useEffect(() => {
         if (!id) {
@@ -76,7 +63,6 @@ export default function EditProfessional() {
                 setName(data.firstName || "");
                 setLastName(data.lastName || "");
                 setCpf(data.cpf || "");
-                setTelephoneNumber(data.telefone || "");
                 setCellphoneNumber(data.celular || "");
                 setUnityApae(data.idSchool || "");
                 setDaysWeek(data.availableHoursId || []);
@@ -89,15 +75,47 @@ export default function EditProfessional() {
                 setLoading(false);
             }
         };
-    
+
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente mais tarde.');
+            }
+        };
+
+        const fetchSpecialities = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/speciality');
+                if (response.status === 200) {
+                    setSpecialities(response.data);
+                } else {
+                    throw new Error('Erro ao buscar especialidades');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar especialidades:', error);
+                setErrorMessage('Erro ao buscar especialidades. Tente novamente mais tarde.');
+            }
+        };
+
         fetchProfessional();
+        fetchSchools();
+        fetchSpecialities();
     }, [id]);
 
     const isDisabled =
         name === '' ||
         lastName === '' ||
         cpf === '' ||
-        telephoneNumber === '' ||
         cellphoneNumber === '' ||
         unityApae === '' ||
         specialityId === '' ||
@@ -112,15 +130,14 @@ export default function EditProfessional() {
 
     const handleSave = async () => {
         const updatedProfessional = {
-            idSchool: unityApae, // ID da unidade APAE (string)
-            firstName: name, // Nome do profissional
-            lastName: lastName, // Sobrenome do profissional
-            cpf, // CPF do profissional
-            celular: cellphoneNumber, // Número do celular do profissional
-            telefone: telephoneNumber, // Telefone do profissional
-            specialityId, // ID da especialidade (string)
-            AvailableHoursId: daysWeek, // IDs dos horários disponíveis (array de strings)
-            obs: observations, // Observações adicionais
+            idSchool: unityApae,
+            firstName: name,
+            lastName: lastName,
+            cpf,
+            celular: cellphoneNumber,
+            specialityId,
+            AvailableHoursId: daysWeek,
+            obs: observations,
         };
 
         console.log("Dados que estão sendo enviados para atualização:", updatedProfessional);
@@ -241,21 +258,6 @@ export default function EditProfessional() {
                 </Box>
                 <Box id='numberInfo' sx={{ display: 'flex', padding: '1rem' }}>
                     <InputMask
-                        mask="(99) 9999-9999"
-                        maskChar=""
-                        value={telephoneNumber}
-                        onChange={(e) => setTelephoneNumber(e.target.value)}
-                    >
-                        {() => (
-                            <TextField
-                                id='telephoneNumber'
-                                variant='outlined'
-                                label='Telefone'
-                                sx={{ marginRight: '1rem', width: '150px' }}
-                            />
-                        )}
-                    </InputMask>
-                    <InputMask
                         mask="(99) 99999-9999"
                         maskChar=""
                         value={cellphoneNumber}
@@ -284,7 +286,7 @@ export default function EditProfessional() {
                         sx={{ width: '400px', marginRight: '1rem' }}
                         onChange={(e) => setUnityApae(e.target.value)}
                     >
-                        {apaes.map((option) => (
+                        {schools.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                             </MenuItem>
@@ -299,9 +301,9 @@ export default function EditProfessional() {
                         sx={{ width: '400px' }}
                         onChange={(e) => setSpecialityId(e.target.value)}
                     >
-                        {specialities.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
+                        {specialities.map((speciality) => (
+                            <MenuItem key={speciality.id_speciality} value={speciality.id_speciality}>
+                                {speciality.name}
                             </MenuItem>
                         ))}
                     </TextField>

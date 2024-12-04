@@ -43,8 +43,23 @@ export default function Students() {
                     throw new Error(`Erro ao buscar estudantes: ${response.statusText}`);
                 }
 
-                setStudents(response.data);
-                setFilteredStudents(response.data); // Inicializa o estado filtrado com todos os estudantes
+                const studentsWithNecessities = await Promise.all(
+                    response.data.map(async (student) => {
+                        try {
+                            const necessityResponse = await axiosInstance.get(`/students/necessity/${student.id_person}`);
+                            return {
+                                ...student,
+                                necessity: necessityResponse.data
+                            };
+                        } catch (err) {
+                            console.error(`Erro ao buscar necessidades do aluno ${student.id_person}:`, err);
+                            return { ...student, necessity: [] };
+                        }
+                    })
+                );
+
+                setStudents(studentsWithNecessities);
+                setFilteredStudents(studentsWithNecessities); // Inicializa o estado filtrado com todos os estudantes
             } catch (error) {
                 setErrorMessage('Erro ao buscar lista de estudantes. Verifique se o backend está em execução e se a URL está correta.');
                 console.error('Erro ao buscar lista de estudantes: ', error);
@@ -218,7 +233,7 @@ export default function Students() {
                                         {Array.isArray(student.necessity) && student.necessity.length > 0 ? (
                                             student.necessity.map((nec, index) => (
                                                 <Typography key={index} sx={{ marginLeft: '24px' }}>
-                                                    {nec.name},
+                                                    {nec.name}{index < student.necessity.length - 1 ? ', ' : ''}
                                                 </Typography>
                                             ))
                                         ) : (

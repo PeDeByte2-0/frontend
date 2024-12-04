@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, MenuItem, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText, Typography } from '@mui/material';
 import InputMask from 'react-input-mask';
 import SaveIcon from '@mui/icons-material/Save';
@@ -8,37 +8,17 @@ import axios from 'axios';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
     },
-  },
 };
 
 export default function NewProfessional() {
-    const apaes = [
-        { value: '1', label: 'Criciúma' },
-        { value: '2', label: 'Tubarão' },
-        { value: '3', label: 'Lauro Müller' },
-        { value: '4', label: 'Içara' },
-    ];
-
-    const availableHours = [
-        { value: '1', label: 'Segunda-feira 08:00' },
-        { value: '2', label: 'Terça-feira 08:00' },
-        { value: '3', label: 'Quarta-feira 08:00' },
-        { value: '4', label: 'Quinta-feira 08:00' },
-        { value: '5', label: 'Sexta-feira 08:00' },
-    ];
-
-    const specialities = [
-        { value: '1', label: 'Fonoaudiólogo' },
-        { value: '2', label: 'Psicólogo' },
-        { value: '3', label: 'Fisioterapeuta' },
-        { value: '4', label: 'Terapeuta Ocupacional' },
-    ];
-
+    const [specialities, setSpecialities] = useState([]);
+    const [schools, setSchools] = useState([]);
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
@@ -51,6 +31,51 @@ export default function NewProfessional() {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
+    const availableHours = [
+        { value: '1', label: 'Segunda-feira 08:00' },
+        { value: '2', label: 'Terça-feira 08:00' },
+        { value: '3', label: 'Quarta-feira 08:00' },
+        { value: '4', label: 'Quinta-feira 08:00' },
+        { value: '5', label: 'Sexta-feira 08:00' },
+    ];
+
+    // Fetching specialities and schools from the backend
+    useEffect(() => {
+        const fetchSpecialities = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/speciality');
+                if (response.status === 200) {
+                    setSpecialities(response.data);
+                } else {
+                    throw new Error('Erro ao buscar especialidades');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar especialidades:', error);
+                setErrorMessage('Erro ao buscar especialidades. Tente novamente mais tarde.');
+            }
+        };
+
+        const fetchSchools = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/School');
+                if (response.status === 200) {
+                    setSchools(response.data.map((school) => ({
+                        value: school.id_school,
+                        label: school.name,
+                    })));
+                } else {
+                    throw new Error('Erro ao buscar unidades APAE');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar unidades APAE:', error);
+                setErrorMessage('Erro ao buscar unidades APAE. Tente novamente mais tarde.');
+            }
+        };
+
+        fetchSpecialities();
+        fetchSchools();
+    }, []);
+
     const isDisabled =
         name === '' ||
         lastName === '' ||
@@ -62,22 +87,20 @@ export default function NewProfessional() {
         daysWeek.length === 0;
 
     const handleDaysChange = (event) => {
-        const {
-            target: { value },
-        } = event;
+        const { target: { value } } = event;
         setDaysWeek(typeof value === 'string' ? value.split(',') : value);
     };
 
     const handleSave = async () => {
         const professionalData = {
-            idSchool: unityApae, // ID da unidade APAE
+            idSchool: unityApae,
             firstName: name,
             lastName: lastName,
             cpf,
             celular: cellphoneNumber,
-            telephoneNumber, // Não está no exemplo do Postman, mas pode ser incluído se for necessário
-            specialityId, // Enviando o ID da especialidade
-            AvailableHoursId: daysWeek, // IDs dos horários disponíveis
+            telephoneNumber,
+            specialityId,
+            AvailableHoursId: daysWeek,
             obs: observations,
         };
 
@@ -212,7 +235,7 @@ export default function NewProfessional() {
                         sx={{ width: '400px', marginRight: '1rem' }}
                         onChange={(e) => setUnityApae(e.target.value)}
                     >
-                        {apaes.map((option) => (
+                        {schools.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                             </MenuItem>
@@ -223,12 +246,13 @@ export default function NewProfessional() {
                         id="specialityId"
                         variant="outlined"
                         label="Especialidade"
+                        value={specialityId}
                         sx={{ width: '400px' }}
                         onChange={(e) => setSpecialityId(e.target.value)}
                     >
-                        {specialities.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
+                        {specialities.map((speciality) => (
+                            <MenuItem key={speciality.id_speciality} value={speciality.id_speciality}>
+                                {speciality.name}
                             </MenuItem>
                         ))}
                     </TextField>

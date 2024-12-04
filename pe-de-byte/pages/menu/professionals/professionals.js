@@ -7,7 +7,6 @@ import HomeIcon from '@mui/icons-material/Home';
 import AddIcon from '@mui/icons-material/Add';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
-import PhoneIcon from '@mui/icons-material/Phone';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
@@ -103,7 +102,8 @@ export default function Professionals() {
         const filtered = professionals.filter(professional => 
             professional.first_name.toLowerCase().includes(value) || 
             professional.last_name.toLowerCase().includes(value) ||
-            professional.specialty_name?.toLowerCase().includes(value)
+            professional.specialty_name?.toLowerCase().includes(value) ||
+            professional.obs?.toLowerCase().includes(value)
         );
         
         setFilteredProfessionals(filtered);
@@ -210,8 +210,7 @@ export default function Professionals() {
                                         <Typography>{professional.celular}</Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex' }}>
-                                        <PhoneIcon fontSize='small' />
-                                        <Typography>{professional.telefone}</Typography>
+                                        <Typography>{professional.obs || 'Sem observações'}</Typography>
                                     </Box>
                                 </Box>
                                 <Box sx={{ marginLeft: 'auto' }}>

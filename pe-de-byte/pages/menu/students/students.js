@@ -1,9 +1,5 @@
-import React, {useEffect} from 'react';
-import { Box, Button, IconButton, TextField, Tooltip } from "@mui/material";
-import AppBar from '@mui/material/AppBar';
-import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, IconButton, Tooltip, Typography, Card, CardContent, AppBar, TextField } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
@@ -17,130 +13,150 @@ import EditIcon from '@mui/icons-material/Edit';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import SearchIcon from '@mui/icons-material/Search';
 import EventIcon from '@mui/icons-material/Event';
-import { useState } from "react";
+import { useRouter } from 'next/router';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export default function Students() {
+    const router = useRouter();
     const [students, setStudents] = useState([]);
+    const [filteredStudents, setFilteredStudents] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
+    // Configurando o axios para incluir o token
+    const axiosInstance = axios.create({
+        baseURL: 'http://localhost:8080/api',
+        headers: {
+            Authorization: `Bearer ${Cookies.get('token')}`,
+        },
+    });
+
+    // Busca a lista de estudantes ao carregar a página
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/students');
-                const data = await response.json();
-                const studentsNecessities = await Promise.all(
-                    data.map(async (student) => {
-                        const necessityResponse = await fetch(`http://localhost:8080/api/students/necessity/${student.id_person}`);
-                        const necessityData = await necessityResponse.json();
-                        return { ...student, necessity: necessityData };
-                    })
-                );
-                setStudents(studentsNecessities);
-                
+                console.log("Buscando estudantes na URL: /students");
+                const response = await axiosInstance.get('/students');
+
+                if (response.status !== 200) {
+                    throw new Error(`Erro ao buscar estudantes: ${response.statusText}`);
+                }
+
+                setStudents(response.data);
+                setFilteredStudents(response.data); // Inicializa o estado filtrado com todos os estudantes
             } catch (error) {
-                console.log('Erro ao buscar lista de alunos: ', error);
+                setErrorMessage('Erro ao buscar lista de estudantes. Verifique se o backend está em execução e se a URL está correta.');
+                console.error('Erro ao buscar lista de estudantes: ', error);
             }
         };
+
         fetchStudents();
     }, []);
 
+    // Função para editar um estudante
+    const handleEdit = (id) => {
+        router.push({
+            pathname: '/menu/students/editStudent/editStudent',
+            query: { id }
+        });
+    };
+
+    // Função para inativar um estudante
+    const handleDelete = async (id) => {
+        if (!id) {
+            setErrorMessage('ID do estudante inválido. Verifique se ele está correto.');
+            console.error('ID do estudante está indefinido ou nulo.');
+            return;
+        }
+
+        if (confirm('Tem certeza de que deseja inativar este estudante?')) {
+            try {
+                console.log(`Tentando inativar o estudante com ID: ${id}`);
+                const url = `/students/inativate/${id}`;
+
+                const response = await axiosInstance.put(url);
+
+                if (response.status === 200) {
+                    console.log('Estudante inativado com sucesso.');
+                    setStudents(students.filter(student => student.id_person !== id));
+                    setFilteredStudents(filteredStudents.filter(student => student.id_person !== id));
+                } else {
+                    throw new Error(`Erro ao inativar estudante: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Erro ao inativar estudante:', error);
+                if (error.response && error.response.status === 404) {
+                    setErrorMessage('Erro 404: Endpoint não encontrado. Verifique a URL e tente novamente.');
+                } else {
+                    setErrorMessage('Erro ao inativar estudante. Tente novamente.');
+                }
+            }
+        }
+    };
+
+    // Função para filtrar os estudantes
+    const handleSearchChange = (event) => {
+        const value = event.target.value.toLowerCase();
+        setSearchTerm(value);
+
+        const filtered = students.filter(student => 
+            student.first_name?.toLowerCase().includes(value) || 
+            student.last_name?.toLowerCase().includes(value) ||
+            student.obs?.toLowerCase().includes(value)
+        );
+        
+        setFilteredStudents(filtered);
+    };
+
     return (
         <div>
-            <AppBar 
-                sx={{ height: '17%',  backgroundColor: '#61c7e7' }}
-            >
-                <Box 
-                    sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}
-                >
-				    <img 
-                        src='/apae.png' 
-                        style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }} 
+            <AppBar sx={{ height: '17%', backgroundColor: '#61c7e7' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                    <img
+                        src='/apae.png'
+                        style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }}
                         alt='Logo'
-                    >
-                    </img>
-                    <div 
-                        className="options" 
-                        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
-                    >
-                        <Tooltip 
-                            title="Página inicial"
-                        >
-                            <IconButton 
-                                aria-label="menu" 
-                                size="large"
-                                href="../menu"
-                            >
-                                <HomeIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
+                    />
+                    <div className="options" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                        <Tooltip title="Página inicial">
+                            <IconButton aria-label="menu" size="large" href="../menu">
+                                <HomeIcon fontSize="inherit" sx={{ color: '#000000' }} />
                             </IconButton>
                         </Tooltip>
                         <Tooltip title="Agendamentos">
                             <IconButton aria-label="schedule" size="large" href="../schedule/schedule">
-                                <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
+                                <EventIcon fontSize="inherit" sx={{ color: '#000000' }} />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip 
-                            title="Profissionais"
-                        >
-                            <IconButton 
-                                aria-label="professionals" 
-                                size="large" 
-                                href="../professionals/professionals"
-                            >
-                                <GroupsIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
+                        <Tooltip title="Profissionais">
+                            <IconButton aria-label="professionals" size="large" href="../professionals/professionals">
+                                <GroupsIcon fontSize="inherit" sx={{ color: '#000000' }} />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip 
-                            title="Alunos"
-                        >
-                            <IconButton 
-                                aria-label="students" 
-                                size="large" 
-                                href="./students"
-                            >
-                                <PersonIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
+                        <Tooltip title="Alunos">
+                            <IconButton aria-label="students" size="large" href="./students">
+                                <PersonIcon fontSize="inherit" sx={{ color: '#000000' }} />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip 
-                            title="Sair"
-                        >
-                            <IconButton 
-                                aria-label="logout" 
-                                size="large" 
-                                href="../../"
-                            >
-                                <LogoutIcon 
-                                    fontSize="inherit" 
-                                    sx={{color:'#000000'}}
-                                />
+                        <Tooltip title="Sair">
+                            <IconButton aria-label="logout" size="large" href="../../">
+                                <LogoutIcon fontSize="inherit" sx={{ color: '#000000' }} />
                             </IconButton>
                         </Tooltip>
                     </div>
                 </Box>
-			</AppBar>
-            <div 
-                className='headerProfessionals' 
-                style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop:'8rem' }}
-            >
-                <Typography 
-                    variant="h5" 
-                    gutterBottom
-                >
+            </AppBar>
+            <div className='headerStudents' style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop: '8rem' }}>
+                <Typography variant="h5" gutterBottom>
                     Alunos
                 </Typography>
-                <Button 
-                    id="postProfessional" 
-                    variant="contained" 
-                    size="large" 
-                    href="./newStudent/newStudent" 
-                    startIcon={<AddIcon />} 
+                <Button
+                    id="postStudent"
+                    variant="contained"
+                    size="large"
+                    href="./newStudent/newStudent"
+                    startIcon={<AddIcon />}
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                 >
                     Cadastrar
@@ -148,123 +164,78 @@ export default function Students() {
             </div>
             <Box
                 id='searchStudent'
-                sx={{ marginLeft:'1rem', marginRight:'1rem', display:'flex', alignItems:'center' }}
+                sx={{ marginLeft: '1rem', marginRight: '1rem', display: 'flex', alignItems: 'center' }}
             >
-                <TextField variant='outlined' label='Pesquisa por Aluno' sx={{width:'95%'}}></TextField>
+                <TextField
+                    variant='outlined'
+                    label='Pesquisar Aluno'
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    sx={{ width: '95%' }}
+                />
                 <Tooltip title='Pesquisar'>
-                    <Button 
-                        variant='contained' 
-                        startIcon={<SearchIcon sx={{width:'35px', height:'35px'}}/>} 
-                        sx={{ marginLeft:'auto', width:'50px' }}
+                    <Button
+                        variant='contained'
+                        startIcon={<SearchIcon sx={{ width: '35px', height: '35px' }} />}
+                        sx={{ marginLeft: 'auto', width: '50px' }}
                     />
                 </Tooltip>
             </Box>
-            <Box
-                id='studentsList'
-            >
-                {students.map((student, index) => (
-                    <Card 
-                        variant='outlined' 
-                        sx={{ backgroundColor:'#c5ecf8', margin:'10px 10px' }}
-                    >
+            <Box id='studentsList'>
+                {filteredStudents.map((student) => (
+                    <Card key={student.id_person} variant='outlined' sx={{ backgroundColor: '#c5ecf8', margin: '10px 10px' }}>
                         <CardContent>
-                            <Box 
-                                sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}
-                            >                
-                                <Typography 
-                                    variant='h5' 
-                                    sx={{ fontWeight:'bold' }}
-                                >
-                                    {`${student.first_name} ${student.last_name}`}
+                            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                                <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+                                    {`${student.first_name || ''} ${student.last_name || ''}`}
                                 </Typography>
-                                <Box 
-                                    sx={{ marginLeft: '10%', display: 'flex', alignItems: 'center', }}
-                                >
-                                    <Typography>
-                                        {student.obs}
-                                    </Typography>                
+                                <Box sx={{ marginLeft: '10%', display: 'flex', alignItems: 'center' }}>
+                                    <Typography>{student.obs || 'Sem observações'}</Typography>
                                 </Box>
-                                <Button id="studentScheduling" 
-                                    variant="outlined" 
+                                <Button
+                                    id="studentScheduling"
+                                    variant="outlined"
                                     size="large"
-                                    href="./schedulingStudent/schedulingStudent" 
-                                    startIcon={<EventNoteIcon />} 
+                                    href="./schedulingStudent/schedulingStudent"
+                                    startIcon={<EventNoteIcon />}
                                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                                 >
                                     Agenda
                                 </Button>
                             </Box>
-                            <Box 
-                                sx={{display:'flex'}}
-                            >
+                            <Box sx={{ display: 'flex' }}>
                                 <Box>
-                                    <Box 
-                                        sx={{ display:'flex' }}
-                                    >
-                                        <AccountBoxIcon 
-                                            fontSize='small'
-                                        />
-                                        <Typography>
-                                            {student.responsavel}
-                                        </Typography>
+                                    <Box sx={{ display: 'flex' }}>
+                                        <AccountBoxIcon fontSize='small' />
+                                        <Typography>{student.responsavel || 'Sem responsável'}</Typography>
                                     </Box>
-                                    <Box 
-                                        sx={{ display:'flex' }}
-                                    >
-                                        <PhoneIcon 
-                                            fontSize='small'
-                                        />
-                                        <Typography>
-                                            {student.celular}
-                                        </Typography>
+                                    <Box sx={{ display: 'flex' }}>
+                                        <PhoneIcon fontSize='small' />
+                                        <Typography>{student.celular || 'Sem celular'}</Typography>
                                     </Box>
-                                    <Box 
-                                        sx={{ display:'flex' }}
-                                    >
-                                        <MedicalInformationIcon 
-                                            fontSize='small'
-                                        />
-                                     
-                                        {student.necessity.map((nec, index) => (
-                                            <Typography key={index} sx={{ marginLeft: '24px' }}>
-                                                {nec.name}, {/* Certifique-se de que está acessando o campo correto da necessidade */}
-                                            </Typography>
-                                        ))}
-                                   
+                                    <Box sx={{ display: 'flex' }}>
+                                        <MedicalInformationIcon fontSize='small' />
+                                        {Array.isArray(student.necessity) && student.necessity.length > 0 ? (
+                                            student.necessity.map((nec, index) => (
+                                                <Typography key={index} sx={{ marginLeft: '24px' }}>
+                                                    {nec.name},
+                                                </Typography>
+                                            ))
+                                        ) : (
+                                            <Typography sx={{ marginLeft: '24px' }}>Nenhuma necessidade cadastrada</Typography>
+                                        )}
                                     </Box>
                                 </Box>
-                                <Box 
-                                    sx={{marginLeft:'auto'}}
-                                >
-                                    <Box 
-                                        sx={{display:'flex', marginLeft:'auto'}}
-                                    >
-                                        <Tooltip 
-                                            title="Editar"
-                                        >
-                                            <IconButton 
-                                                aria-label="menu" 
-                                                size="large" 
-                                                href={`./editStudent/editStudent/${student.id}`}
-                                            >
-                                                <EditIcon 
-                                                    fontSize="inherit" 
-                                                    sx={{color:'#000000'}}
-                                                />
+                                <Box sx={{ marginLeft: 'auto' }}>
+                                    <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
+                                        <Tooltip title="Editar">
+                                            <IconButton aria-label="edit" size="large" onClick={() => handleEdit(student.id_person)}>
+                                                <EditIcon fontSize="inherit" sx={{ color: '#000000' }} />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip 
-                                            title="Excluir"
-                                        >
-                                            <IconButton 
-                                                aria-label="menu" 
-                                                size="large"
-                                                href=""
-                                            >
-                                                <DeleteIcon 
-                                                    fontSize="inherit" 
-                                                    sx={{color:'#000000'}}
-                                                />
+                                        <Tooltip title="Excluir">
+                                            <IconButton aria-label="delete" size="large" onClick={() => handleDelete(student.id_person)}>
+                                                <DeleteIcon fontSize="inherit" sx={{ color: '#000000' }} />
                                             </IconButton>
                                         </Tooltip>
                                     </Box>

@@ -25,7 +25,6 @@ export default function Home() {
     useEffect(() => {
         const token = Cookies.get('token');
         if (token) {
-            // Se o token existir, redireciona para /menu/menu
             router.push('/menu');
         }
     }, [router]);

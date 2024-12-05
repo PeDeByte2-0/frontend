@@ -160,7 +160,7 @@ export default function EditStudent() {
                 `http://localhost:8080/api/students/${id}`,
                 studentData
             );
-            if (response.status === 200) {
+            if (response.status === 201) {
                 setSuccessMessage('Aluno atualizado com sucesso!');
                 setErrorMessage('');
 

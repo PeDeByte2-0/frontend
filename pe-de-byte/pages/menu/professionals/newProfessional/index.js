@@ -4,6 +4,7 @@ import InputMask from 'react-input-mask';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -17,6 +18,7 @@ const MenuProps = {
 };
 
 export default function NewProfessional() {
+    const router = useRouter();
     const [specialities, setSpecialities] = useState([]);
     const [schools, setSchools] = useState([]);
     const [availableHours, setAvailableHours] = useState([]);
@@ -120,8 +122,15 @@ export default function NewProfessional() {
                 'http://localhost:8080/api/professionals',
                 professionalData
             );
-            setSuccessMessage('Profissional cadastrado com sucesso!');
-            setErrorMessage('');
+
+            if (response.status === 200) {
+                setSuccessMessage('Profissional atualizado com sucesso!');
+                setErrorMessage('');
+                router.push('../professionals');
+            } else {
+                throw new Error(`Erro ao atualizar profissional: ${response.statusText}`);
+            }
+
         } catch (error) {
             setErrorMessage('Erro ao cadastrar profissional. Tente novamente.');
             console.error('Erro:', error.response?.data || error.message);

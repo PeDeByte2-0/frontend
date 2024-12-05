@@ -22,7 +22,7 @@ export default function Schedule() {
         <div>
             <MenuBar />
             <div 
-                className='headerProfessionals' 
+                className='headerSchedules' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop:'8rem' }}
             >
                 <Typography 
@@ -32,10 +32,10 @@ export default function Schedule() {
                     Agendamentos
                 </Typography>
                 <Button 
-                    id="postProfessional" 
+                    id="postSchedules" 
                     variant="contained" 
                     size="large" 
-                    href="./newProfessional/newProfessional" 
+                    href="/menu/schedule/newSchedule/" 
                     startIcon={<AddIcon />} 
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                 >
@@ -45,7 +45,7 @@ export default function Schedule() {
 
                 <form onSubmit='' >
                     <Box
-                    id='searchProfessional'
+                    id='searchSchedules'
                     sx={{ marginLeft:'1rem', marginRight:'1rem', display:'flex', alignItems:'center' }}
                 >
                     <TextField variant='outlined' label='Pesquisa por Nome' sx={{width:'40%'}}></TextField>

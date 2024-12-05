@@ -1,28 +1,24 @@
 import * as React from 'react';
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { AppBar, Box, IconButton, Tooltip } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-
 import VisibilityIcon from '@mui/icons-material/Visibility';
-<<<<<<< Updated upstream:pe-de-byte/pages/menu/index.js
-
 import MenuBar from '../../components/menuBar';
-
-=======
+import GroupsIcon from '@mui/icons-material/Groups';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
 import HomeIcon from '@mui/icons-material/Home';
 import EventIcon from '@mui/icons-material/Event';
 import useAuth from '../hooks/useAuth';
 import Head from 'next/head';
->>>>>>> Stashed changes:pe-de-byte/pages/menu/menu.js
+
 
 export default function Menu() {
 
     return (
         <div>
-<<<<<<< Updated upstream:pe-de-byte/pages/menu/index.js
             <MenuBar />
-=======
             <Head>
                 <title>Home | Pé de Byte 2.0</title>
             </Head>
@@ -58,7 +54,7 @@ export default function Menu() {
                     </div>
                 </Box>
 			</AppBar>
->>>>>>> Stashed changes:pe-de-byte/pages/menu/menu.js
+
             <Typography variant="h5" gutterBottom sx={{ margin:'10% 10% 5% 10%' }}>
 				Olá! Seja bem-vindo ao menu
 			</Typography>

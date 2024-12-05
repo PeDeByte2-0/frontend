@@ -28,20 +28,13 @@ export default function EditProfessional() {
     const [cpf, setCpf] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
-    const [daysWeek, setDaysWeek] = useState([]);
+    const [daysWeek, setAvailableHours] = useState([]);
     const [specialityId, setSpecialityId] = useState('');
     const [observations, setObservations] = useState('');
     const [loading, setLoading] = useState(true);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const availableHours = [
-        { value: '1', label: 'Segunda-feira 08:00' },
-        { value: '2', label: 'Terça-feira 08:00' },
-        { value: '3', label: 'Quarta-feira 08:00' },
-        { value: '4', label: 'Quinta-feira 08:00' },
-        { value: '5', label: 'Sexta-feira 08:00' },
-    ];
 
     useEffect(() => {
         if (!id) {
@@ -49,30 +42,46 @@ export default function EditProfessional() {
             return;
         }
 
-        const fetchProfessional = async () => {
+       const fetchProfessional = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8080/api/professionals/${id}`);
+        if (response.status === 200) {
+            const data = response.data;
+            setName(data.firstName || "");
+            setLastName(data.lastName || "");
+            setCpf(data.cpf || "");
+            setCellphoneNumber(data.celular || "");
+            setUnityApae(data.idSchool || "");
+            setAvailableHours(data.availableHoursId || []); // IDs dos horários
+            setSpecialityId(data.specialityId || "");
+            setObservations(data.obs || "");
+        } else {
+            throw new Error(`Erro ao buscar profissional: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error("Erro ao buscar profissional:", error);
+        setErrorMessage("Erro ao buscar profissional.");
+    } finally {
+        setLoading(false);
+    }
+};
+
+        const fetchProfessionalHours = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/professionals/${id}`);
-                
-                if (response.status !== 200) {
-                    throw new Error(`Erro ao buscar profissional: ${response.statusText}`);
+                const response = await axios.get(`http://localhost:8080/api/hours/`);
+                if (response.status === 200) {
+                    setAvailableHours(
+                        response.data.map((hour) => ({
+                            value: hour.id_hours,
+                            label: `${hour.weekday} ${hour.starttime} - ${hour.endtime}`,
+                        }))
+                    );
+                } else {
+                    throw new Error(`Erro ao buscar horas: ${response.statusText}`);
                 }
-
-                const data = response.data;
-
-                // Preenche os estados com os dados recebidos
-                setName(data.firstName || "");
-                setLastName(data.lastName || "");
-                setCpf(data.cpf || "");
-                setCellphoneNumber(data.celular || "");
-                setUnityApae(data.idSchool || "");
-                setDaysWeek(data.availableHoursId || []);
-                setSpecialityId(data.specialityId || "");
-                setObservations(data.obs || "");
             } catch (error) {
-                console.error("Erro ao buscar dados do profissional:", error);
-                setErrorMessage("Erro ao buscar dados do profissional. Verifique se o servidor está disponível e tente novamente.");
-            } finally {
-                setLoading(false);
+                console.error("Erro ao buscar horários:", error);
+                setErrorMessage("Erro ao buscar horários disponíveis.");
             }
         };
 
@@ -110,6 +119,7 @@ export default function EditProfessional() {
         fetchProfessional();
         fetchSchools();
         fetchSpecialities();
+        fetchProfessionalHours();
     }, [id]);
 
     const isDisabled =
@@ -121,12 +131,10 @@ export default function EditProfessional() {
         specialityId === '' ||
         daysWeek.length === 0;
 
-    const handleDaysChange = (event) => {
-        const {
-            target: { value },
-        } = event;
-        setDaysWeek(typeof value === 'string' ? value.split(',') : value);
-    };
+        const handleDaysChange = (event) => {
+            const { value } = event.target;
+            setAvailableHours(value);  // Atualiza o estado corretamente
+        };
 
     const handleSave = async () => {
         const updatedProfessional = {
@@ -212,16 +220,26 @@ export default function EditProfessional() {
             </div>
             <Box id='editProfessionalForm'>
                 <Box id='idProfessional' sx={{ display: 'flex', padding: '1rem' }}>
-                    <TextField 
-                        id='id' 
-                        variant='outlined' 
-                        label='ID do Profissional' 
-                        value={id}
-                        sx={{ marginRight: '1rem', width: '200px' }} 
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                    />
+                    <InputMask
+                        mask={id}
+                        maskChar=""
+                        value={id || ""}  // Se o id não estiver disponível, o valor será uma string vazia
+                    >
+                        {() => (
+                            <TextField
+                                id="id"
+                                variant="outlined"
+                                label="ID do Profissional"
+                                value={id || ""}  // Garante que o valor do campo seja uma string vazia ou o id
+                                sx={{ marginRight: "1rem", width: "200px" }}
+                                InputProps={{
+                                    readOnly: true,
+                                }}
+                                InputLabelProps={{ shrink: true }}  // Força o label a ficar acima
+                            />
+                        )}
+                    </InputMask>
+
                 </Box>
                 <Box id='fullNameProfessional' sx={{ display: 'flex', padding: '1rem' }}>
                     <TextField 
@@ -320,17 +338,25 @@ export default function EditProfessional() {
                         value={daysWeek}
                         onChange={handleDaysChange}
                         input={<OutlinedInput label="Dia e Hora" />}
-                        renderValue={(selected) => selected.join(', ')}
+                        renderValue={(selected) => {
+                            if (selected.length === 0) return 'Nenhuma seleção';  // Mensagem quando nada é selecionado
+                            // Usando availableHoursOptions para renderizar corretamente os rótulos
+                            const selectedLabels = daysWeek
+                                .filter(option => selected.includes(option.value))  // Filtra as opções selecionadas
+                                .map(option => option.label);  // Mapeia para os rótulos
+                            return selectedLabels.join(', ');  // Junta os rótulos com vírgula entre eles
+                        }}
                         MenuProps={MenuProps}
                     >
-                        {availableHours.map((day) => (
-                            <MenuItem key={day.value} value={day.value}>
-                                <Checkbox checked={daysWeek.includes(day.value)} />
-                                <ListItemText primary={day.label} />
+                        {daysWeek.map((hour) => (
+                            <MenuItem key={hour.value} value={hour.value}>
+                                <Checkbox checked={daysWeek.includes(hour.value)} />
+                                <ListItemText primary={hour.label} />
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
+
             </Box>
             <Box sx={{ padding: '1rem' }}>
                 <TextField

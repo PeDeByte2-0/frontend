@@ -12,6 +12,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/pt-br'; // Importa a localização para português do Brasil
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import dayjs from "dayjs";
+import Head from "next/head";
 
 dayjs.locale('pt-br');
 dayjs.extend(localizedFormat);
@@ -23,6 +24,9 @@ export default function EditProfessional() {
 
     return (
         <div>
+            <Head>
+                <title>Profissionais | Pé de Byte 2.0</title>
+            </Head>
             <div 
                 className='headerProfessionalsEdit' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>

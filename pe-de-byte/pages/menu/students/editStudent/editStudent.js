@@ -1,6 +1,6 @@
 // import * as React from 'react';
 import { Box, Button, TextField, MenuItem, FormGroup, FormControlLabel, Checkbox, Select, InputLabel, FormControl, OutlinedInput, ListItemText } from "@mui/material";
-import React from 'react';
+import React, { useEffect } from 'react';
 import InputMask from 'react-input-mask';
 import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
@@ -19,7 +19,7 @@ const MenuProps = {
   },
 };
 
-export default function EditProfessional() {
+export default function EditStudent({ studentId }) {
 
     const apaes = [
         {
@@ -40,6 +40,10 @@ export default function EditProfessional() {
         },
     ];
 
+    const professionalFunction = [
+        'Deixar aqui as especialidades dos profissionais',
+    ];
+
     const daysOfTheWeek = [
         'Segunda-feira 08:00',
         'Terça-feira 08:00',
@@ -51,13 +55,74 @@ export default function EditProfessional() {
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
     const [cpf, setCpf] = useState('');
+    const [nameParent, setNameParent] = useState('');
+    const [lastNameParent, setLastNameParent] = useState('');
+    const [cpfParent, setCpfParent] = useState('');
     const [telephoneNumber, setTelephoneNumber] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
     const [daysWeek, setDaysWeek] = useState([]);
-    const [professionalFunction, setProfessionalFunction] = useState('');
+    const [studentNeed, setstudentNeed] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const isDisabled = name === '' || lastName ==='' || cpf === '' || telephoneNumber === '' || cellphoneNumber === '' || unityApae === '' || professionalFunction === '';
+    useEffect(() => {
+        const fetchStudent = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/students/${studentId}`);
+                
+                if (!response.ok) {
+                    // Log para o caso de erro na resposta
+                    const errorText = await response.text();
+                    console.error("Erro na resposta da API:", errorText);
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+    
+                const data = await response.json();
+                
+                // Preenche os estados com os dados recebidos
+                setName(data.name || "");
+                setLastName(data.lastName || "");
+                setCpf(data.cpf || "");
+                setNameParent(data.nameParent || "");
+                setLastNameParent(data.lastNameParent || "");
+                setCpfParent(data.cpfParent || "");
+                setTelephoneNumber(data.telephoneNumber || "");
+                setCellphoneNumber(data.cellphoneNumber || "");
+                setUnityApae(data.unityApae || "");
+                setDaysWeek(data.daysWeek || []);
+                setStudentNeed(data.studentNeed || []);
+            } catch (error) {
+                console.error("Erro ao buscar dados do estudante:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        fetchStudent();
+    }, [studentId]);
+    
+
+    const isDisabled = name === '' || 
+                       lastName ==='' || 
+                       cpf === '' || 
+                       nameParent === '' || 
+                       lastNameParent ==='' || 
+                       cpfParent === '' || 
+                       telephoneNumber === '' || 
+                       cellphoneNumber === '' || 
+                       unityApae === '' || 
+                       studentNeed.length === 0 ||
+                       daysWeek.length === 0;
+
+    const handleNeedChange = (event) => {
+        const {
+          target: { value },
+        } = event;
+        setstudentNeed(
+          // On autofill, we get a stringified value
+          typeof value === 'string' ? value.split(',') : value
+        );
+    };
 
     const handleDaysChange = (event) => {
         const {
@@ -68,31 +133,54 @@ export default function EditProfessional() {
           typeof value === 'string' ? value.split(',') : value
         );
     };
+
+    const [students, setStudentsEditing] = useState([]);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/students');
+                const data = await response.json();
+                const studentsNecessities = await Promise.all(
+                    data.map(async (student) => {
+                        const necessityResponse = await fetch(`http://localhost:8080/api/students/necessity/${student.id_person}`);
+                        const necessityData = await necessityResponse.json();
+                        return { ...student, necessity: necessityData };
+                    })
+                );
+                setStudentsEditing(studentsNecessities);
+                
+            } catch (error) {
+                console.log('Erro ao buscar lista de alunos: ', error);
+            }
+        };
+        fetchStudents();
+    }, []);
     
     return (
         <div>
             <Head>
-                <title>Profissionais | Pé de Byte 2.0</title>
+                <title>Alunos | Pé de Byte 2.0</title>
             </Head>
             <div 
-                className='headerProfessionalsCreate' 
+                className='headerStudentsCreate' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>
                 <Typography 
                     variant="h5" 
                     gutterBottom>
-                        Cadastro de Profissional
+                        Cadastro de Alunos
                 </Typography>
                 <Button 
-                    id='backProfessional'
+                    id='backStudents'
                     variant='outlined'
                     size='large'
-                    href='../professionals'
+                    href='../students'
                     startIcon={<ReplyIcon />}
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
                         Voltar
                 </Button>
                 <Button 
-                    id="savePostProfessional" 
+                    id="savePostStudent" 
                     variant="contained" 
                     size="large" 
                     href="" 
@@ -103,14 +191,15 @@ export default function EditProfessional() {
                 </Button>
             </div>
             <Box 
-                id='createProfessionalForm'>
+                id='createStudentForm'>
                 <Box 
-                    id='fullName' 
+                    id='fullNameStudent' 
                     sx={{display:'flex', padding:'1rem'}}>
                     <TextField 
                         id='name' 
                         variant='outlined' 
                         label='Nome' 
+                        value={name}
                         sx={{marginRight:'1rem', width:'200px'}} 
                         onChange={(e) => setName(e.target.value)}>
                     </TextField>
@@ -118,13 +207,9 @@ export default function EditProfessional() {
                         id='lastName' 
                         variant='outlined' 
                         label='Sobrenome' 
-                        sx={{width:'400px'}} 
+                        sx={{marginRight:'1rem', width:'400px'}} 
                         onChange={(e) => setLastName(e.target.value)}>
                     </TextField>
-                </Box>
-                <Box 
-                    id='numberInfo' 
-                    sx={{display:'flex', padding:'1rem'}}>
                     <InputMask
                         mask="999.999.999-99"
                         maskChar=""
@@ -139,6 +224,43 @@ export default function EditProfessional() {
                             />
                         )}
                     </InputMask>
+                </Box>
+                <Box 
+                    id='fullNameParent' 
+                    sx={{display:'flex', padding:'1rem'}}>
+                    <TextField 
+                        id='name' 
+                        variant='outlined' 
+                        label='Nome Responsável' 
+                        sx={{marginRight:'1rem', width:'200px'}} 
+                        onChange={(e) => setNameParent(e.target.value)}>
+                    </TextField>
+                    <TextField 
+                        id='lastName' 
+                        variant='outlined' 
+                        label='Sobrenome Responsável' 
+                        sx={{marginRight:'1rem', width:'400px'}} 
+                        onChange={(e) => setLastNameParent(e.target.value)}>
+                    </TextField>
+                    <InputMask
+                        mask="999.999.999-99"
+                        maskChar=""
+                        onChange={(e) => setCpfParent(e.target.value)}
+                    >
+                        {() => (
+                            <TextField
+                                id='cpf'
+                                variant='outlined'
+                                label='CPF Responsável'
+                                sx={{marginRight:'1rem', width:'150px'}}
+                            />
+                        )}
+                    </InputMask>
+                </Box>
+                <Box 
+                    id='numberInfo' 
+                    sx={{display:'flex', padding:'1rem'}}>
+                    
                     <InputMask
                         mask="(99) 9999-9999"
                         maskChar=""
@@ -163,7 +285,7 @@ export default function EditProfessional() {
                                 id='cellphoneNumber'
                                 variant='outlined'
                                 label='Celular'
-                                sx={{width:'155px'}}
+                                sx={{marginRight:'1rem', width:'155px'}}
                             />
                         )}
                     </InputMask>
@@ -187,12 +309,26 @@ export default function EditProfessional() {
                                 </MenuItem>
                             ))}
                     </TextField>
-                    <TextField 
-                        id="professionalFunction" 
-                        variant="outlined" 
-                        label="Especialidade" 
-                        onChange={(e) => setProfessionalFunction(e.target.value)}>
-                    </TextField>
+                    <FormControl sx={{ width: '30%'}}>
+                <InputLabel id="days-select-label">Necessidades</InputLabel>
+                <Select
+                    labelId="days-select-label"
+                    id="days-select"
+                    multiple
+                    value={studentNeed}
+                    onChange={handleNeedChange}
+                    input={<OutlinedInput label="Necessidades" />}
+                    renderValue={(selected) => selected.join(', ')}
+                    MenuProps={MenuProps}
+                >
+                    {professionalFunction.map((need) => (
+                    <MenuItem key={need} value={need}>
+                        <Checkbox checked={studentNeed.includes(need)} />
+                        <ListItemText primary={need} />
+                    </MenuItem>
+                    ))}
+                </Select>
+                </FormControl>
                 </Box>
                 <Typography 
                     sx={{marginLeft:'1rem'}}>

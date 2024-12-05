@@ -30,7 +30,7 @@ const cardProfessionals = (
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>                
                 <Typography variant='h5'>Veja uma lista de profissionais e suas agendas para planejar as próximas consultas conforme sua disponibilidade</Typography>
                 <Tooltip title="Veja os Profissionais">
-                    <IconButton aria-label="viewProfessionals" size="large" href="./professionals/professionals" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    <IconButton aria-label="viewProfessionals" size="large" href="./menu/professionals" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
                         <VisibilityIcon fontSize="inherit" sx={{color:'#000000'}}></VisibilityIcon>
                     </IconButton>
                 </Tooltip>
@@ -45,7 +45,7 @@ const cardStudents = (
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>                
                 <Typography variant='h5'>Confira os atendimentos pelas agendas dos alunos para planejar suas próximas consultas</Typography>
                 <Tooltip title="Veja os Alunos">
-                    <IconButton aria-label="viewStudents" size="large" href="./students/students" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    <IconButton aria-label="viewStudents" size="large" href="./menu/students" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
                         <VisibilityIcon fontSize="inherit" sx={{color:'#000000'}}></VisibilityIcon>
                     </IconButton>
                 </Tooltip>
@@ -60,7 +60,7 @@ const cardSchedule = (
             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>                
                 <Typography variant='h5'>Acesse todos os agendamentos marcados para a sua instituição</Typography>
                 <Tooltip title="Veja os Agendamentos">
-                    <IconButton aria-label="viewSchedule" size="large" href="./schedule/schedule" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    <IconButton aria-label="viewSchedule" size="large" href="./menu/schedule" sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
                         <VisibilityIcon fontSize="inherit" sx={{color:'#000000'}}></VisibilityIcon>
                     </IconButton>
                 </Tooltip>

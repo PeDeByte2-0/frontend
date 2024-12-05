@@ -4,6 +4,7 @@ import InputMask from 'react-input-mask';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -17,6 +18,7 @@ const MenuProps = {
 };
 
 export default function NewStudent() {
+    const router = useRouter();
     const [schools, setSchools] = useState([]);
     const [availableHours, setAvailableHours] = useState([]);
     const [necessities, setNecessities] = useState([]);
@@ -25,7 +27,6 @@ export default function NewStudent() {
     const [cpf, setCpf] = useState('');
     const [nameParent, setNameParent] = useState('');
     const [lastNameParent, setLastNameParent] = useState('');
-    const [cpfParent, setCpfParent] = useState('');
     const [telephoneNumber, setTelephoneNumber] = useState('');
     const [cellphoneNumber, setCellphoneNumber] = useState('');
     const [unityApae, setUnityApae] = useState('');
@@ -98,7 +99,6 @@ export default function NewStudent() {
         cpf === '' ||
         nameParent === '' ||
         lastNameParent === '' ||
-        cpfParent === '' ||
         telephoneNumber === '' ||
         cellphoneNumber === '' ||
         unityApae === '' ||
@@ -138,8 +138,17 @@ export default function NewStudent() {
                 'http://localhost:8080/api/students',
                 studentData
             );
-            setSuccessMessage('Aluno cadastrado com sucesso!');
-            setErrorMessage('');
+
+            if (response.status === 200) {
+                setSuccessMessage('Aluno cadastrado com sucesso!');
+                setErrorMessage('');
+
+                // Redirecionar automaticamente após salvar com sucesso
+                setTimeout(() => {
+                    router.push('/menu/students/students');
+                }, 2000); // Aguardar 2 segundos antes de redirecionar
+            }
+
         } catch (error) {
             setErrorMessage('Erro ao cadastrar aluno. Tente novamente.');
             console.error('Erro:', error.response?.data || error.message);
@@ -236,25 +245,11 @@ export default function NewStudent() {
                         sx={{ marginRight: '1rem', width: '400px' }}
                         onChange={(e) => setLastNameParent(e.target.value)}
                     />
-                    <InputMask
-                        mask="999.999.999-99"
-                        maskChar=""
-                        onChange={(e) => setCpfParent(e.target.value)}
-                    >
-                        {() => (
-                            <TextField
-                                id="cpfParent"
-                                variant="outlined"
-                                label="CPF Responsável"
-                                sx={{ marginRight: '1rem', width: '150px' }}
-                            />
-                        )}
-                    </InputMask>
                 </Box>
 
                 <Box id="numberInfo" sx={{ display: 'flex', padding: '1rem' }}>
                     <InputMask
-                        mask="(99) 9999-9999"
+                        mask="(99) 99999-9999"
                         maskChar=""
                         onChange={(e) => setTelephoneNumber(e.target.value)}
                     >

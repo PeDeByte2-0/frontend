@@ -12,10 +12,14 @@ import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import { useState } from 'react';
 import { EventNoteOutlined } from "@mui/icons-material";
+import Head from "next/head";
 
 export default function SchedulingStudent() {
     return(
         <div>
+            <Head>
+                <title>Alunos | Pé de Byte 2.0</title>
+            </Head>
             <div 
                 className='headerStudentsCreate' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>

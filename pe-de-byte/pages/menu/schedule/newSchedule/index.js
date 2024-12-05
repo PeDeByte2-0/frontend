@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
 import ReplyIcon from '@mui/icons-material/Reply';
 import { useState } from 'react';
+import Head from "next/head";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -70,6 +71,9 @@ export default function NewProfessional() {
     
     return (
         <div>
+            <Head>
+                <title>Profissionais | Pé de Byte 2.0</title>
+            </Head>
             <div 
                 className='headerProfessionalsCreate' 
                 style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem' }}>

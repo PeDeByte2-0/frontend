@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Head from "next/head";
 
 
 export default function Home() {
@@ -48,28 +49,41 @@ export default function Home() {
 
     return (
         <div>
-        <AppBar 
-            position="fixed"
-            sx={{
-                height: {
-                    xs: '20%',  // Para telas pequenas (xs)
-                    sm: '30%'   // Para telas médias e maiores (sm)
-                },
-                backgroundColor: '#61c7e7',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '10px 0',
-                boxShadow: 0
-            }}
-        >
-            <img
-                src='/apae.png'
-                style={{ width: '150px', height: '150px' }}
-                alt='Logo'
-            />
-        </AppBar>
-            <Typography variant="h4" gutterBottom sx={{ marginTop: '20%', textAlign: 'center' }}>
+            <Head>
+                <title>Pé de Byte 2.0</title>
+            </Head>
+            <AppBar 
+                position="fixed"
+                sx={{
+                    height: {
+                        xs: '30%',  // Para telas pequenas (xs)
+                        sm: '30%'   // Para telas médias e maiores (sm)
+                    },
+                    backgroundColor: '#61c7e7',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '10px 0',
+                    boxShadow: 0
+                }}
+            >
+                <img
+                    src='/apae.png'
+                    style={{ width: '150px', height: '150px' }}
+                    alt='Logo'
+                />
+            </AppBar>
+            <Typography 
+                variant="h4" 
+                gutterBottom 
+                sx={{
+                    textAlign: 'center',
+                    marginTop:{
+                        xs: '100%',
+                        sm: '20%'
+                    }
+                }}
+            >
                 Seja bem-vindo! Faça seu login
             </Typography>
             {errorMessage && (

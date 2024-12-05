@@ -1,11 +1,21 @@
 import { AppBar, Box, IconButton, Tooltip } from "@mui/material";
 import HomeIcon from '@mui/icons-material/Home';
-
+import { useRouter } from 'next/router';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
 import EventIcon from '@mui/icons-material/Event';
+import Cookies from 'js-cookie';
 export default function MenuBar() {
+
+    // Função para realizar logout
+    const router = useRouter();
+    
+    const handleLogout = () => {
+        Cookies.remove('token'); // Remove o token do cookie
+        router.push('/'); // Redireciona para a página de login
+    };
+
     return (
         <AppBar 
         sx={{ height: '17%',  backgroundColor: '#61c7e7' }}
@@ -29,7 +39,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="menu" 
                         size="large"
-                         href="../menu"
+                         href="/menu"
                     >
                         <HomeIcon 
                             fontSize="inherit" 
@@ -38,7 +48,7 @@ export default function MenuBar() {
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Agendamentos">
-                    <IconButton aria-label="schedule" size="large" href="./schedule">
+                    <IconButton aria-label="schedule" size="large" href="/menu/schedule">
                         <EventIcon fontSize="inherit" sx={{color:'#000000'}}></EventIcon>
                     </IconButton>
                 </Tooltip>
@@ -48,7 +58,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="professionals" 
                         size="large" 
-                        href="../professionals/professionals"
+                        href="/menu/professionals"
                     >
                         <GroupsIcon 
                             fontSize="inherit" 
@@ -62,7 +72,7 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="students" 
                         size="large" 
-                        href="../students/students"
+                        href="/menu/students"
                     >
                         <PersonIcon 
                             fontSize="inherit" 
@@ -76,7 +86,8 @@ export default function MenuBar() {
                     <IconButton 
                         aria-label="logout" 
                         size="large" 
-                        href="../../"
+                        onClick={handleLogout}
+
                     >
                         <LogoutIcon 
                             fontSize="inherit" 

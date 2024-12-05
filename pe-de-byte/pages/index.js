@@ -1,13 +1,16 @@
 import { Button, TextField, FormControl, InputLabel, InputAdornment, IconButton, FilledInput } from "@mui/material";
+import { useRouter } from 'next/router';
 import LoginIcon from '@mui/icons-material/Login';
 import Typography from '@mui/material/Typography';
 import AppBar from '@mui/material/AppBar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+
 export default function Home() {
+    const router = useRouter();
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +19,15 @@ export default function Home() {
 
     const handleClickShowPassword = () => setShowPassword((prev) => !prev);
     const handleMouseDownPassword = (event) => event.preventDefault();
+
+    // Verifica se o usuário já está autenticado
+    useEffect(() => {
+        const token = Cookies.get('token');
+        if (token) {
+            // Se o token existir, redireciona para /menu/menu
+            router.push('/menu/menu');
+        }
+    }, [router]);
 
     const handleLogin = async () => {
         try {
@@ -27,9 +39,10 @@ export default function Home() {
             Cookies.set('token', token, { expires: 1, secure: true });
 
             // Redireciona o usuário para a página inicial
-            window.location.href = '/menu/menu';
+            router.push('/menu/menu');
         } catch (error) {
             setErrorMessage('Usuário ou senha inválidos');
+            console.log(error)
         }
     };
 

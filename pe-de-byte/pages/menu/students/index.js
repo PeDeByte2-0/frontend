@@ -16,6 +16,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import MenuBar from '../../../components/menuBar';
 
 export default function Students() {
     const router = useRouter();
@@ -72,7 +73,7 @@ export default function Students() {
     // Função para editar um estudante
     const handleEdit = (id) => {
         router.push({
-            pathname: '/menu/students/editStudent/editStudent',
+            pathname: '/menu/students/editStudent',
             query: { id }
         });
     };
@@ -126,42 +127,7 @@ export default function Students() {
 
     return (
         <div>
-            <AppBar sx={{ height: '17%', backgroundColor: '#61c7e7' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                    <img
-                        src='/apae.png'
-                        style={{ width: '90px', height: '90px', display: 'block', margin: '10px 10px' }}
-                        alt='Logo'
-                    />
-                    <div className="options" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                        <Tooltip title="Página inicial">
-                            <IconButton aria-label="menu" size="large" href="../menu">
-                                <HomeIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Agendamentos">
-                            <IconButton aria-label="schedule" size="large" href="../schedule/schedule">
-                                <EventIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Profissionais">
-                            <IconButton aria-label="professionals" size="large" href="../professionals/professionals">
-                                <GroupsIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Alunos">
-                            <IconButton aria-label="students" size="large" href="./students">
-                                <PersonIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Sair">
-                            <IconButton aria-label="logout" size="large" href="../../">
-                                <LogoutIcon fontSize="inherit" sx={{ color: '#000000' }} />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                </Box>
-            </AppBar>
+            <MenuBar />
             <div className='headerStudents' style={{ display: 'flex', alignItems: 'center', flexGrow: 1, padding: '1rem', marginTop: '8rem' }}>
                 <Typography variant="h5" gutterBottom>
                     Alunos
@@ -170,7 +136,7 @@ export default function Students() {
                     id="postStudent"
                     variant="contained"
                     size="large"
-                    href="./newStudent/newStudent"
+                    href="/menu/students/newStudent"
                     startIcon={<AddIcon />}
                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                 >
@@ -211,7 +177,7 @@ export default function Students() {
                                     id="studentScheduling"
                                     variant="outlined"
                                     size="large"
-                                    href="./schedulingStudent/schedulingStudent"
+                                    href="./schedulingStudent"
                                     startIcon={<EventNoteIcon />}
                                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                                 >

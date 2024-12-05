@@ -25,7 +25,7 @@ export default function Home() {
         const token = Cookies.get('token');
         if (token) {
             // Se o token existir, redireciona para /menu/menu
-            router.push('/menu/menu');
+            router.push('/menu');
         }
     }, [router]);
 
@@ -39,7 +39,7 @@ export default function Home() {
             Cookies.set('token', token, { expires: 1, secure: true });
 
             // Redireciona o usuário para a página inicial
-            router.push('/menu/menu');
+            router.push('/menu');
         } catch (error) {
             setErrorMessage('Usuário ou senha inválidos');
             console.log(error)

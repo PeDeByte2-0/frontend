@@ -1,21 +1,16 @@
 import * as React from 'react';
 import { Box, IconButton, Tooltip } from "@mui/material";
-import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import LogoutIcon from '@mui/icons-material/Logout';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PersonIcon from '@mui/icons-material/Person';
+
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import HomeIcon from '@mui/icons-material/Home';
-import EventIcon from '@mui/icons-material/Event';
-import useAuth from '../hooks/useAuth';
+
 import MenuBar from '../../components/menuBar';
+
 
 export default function Menu() {
 
-    useAuth();
     return (
         <div>
             <MenuBar />

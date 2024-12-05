@@ -8,7 +8,7 @@ const useAuth = () => {
     useEffect(() => {
         const token = Cookies.get('token');
         if (!token) {
-            router.push('/'); // Redireciona para o login se não estiver autenticado
+            router.push('/'); // Redireciona para o login
         }
     }, [router]);
 };

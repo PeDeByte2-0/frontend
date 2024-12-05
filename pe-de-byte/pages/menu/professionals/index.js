@@ -176,7 +176,10 @@ export default function Professionals() {
                                         <Typography>{professional.celular}</Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex' }}>
-                                        <Typography>{professional.obs || 'Sem observações'}</Typography>
+                                        <Typography>{professional.speciality}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex' }}>
+                                        <Typography>{professional.obs|| 'Sem observações'}</Typography>
                                     </Box>
                                 </Box>
                                 <Box sx={{ marginLeft: 'auto' }}>

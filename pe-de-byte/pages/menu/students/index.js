@@ -170,6 +170,9 @@ export default function Students() {
                                 <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
                                     {`${student.first_name || ''} ${student.last_name || ''}`}
                                 </Typography>
+                                <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
+                                    {" ___"}  {` Id: ${student.id_person || 'Sem ID'}`}
+                                </Typography>
                                 <Box sx={{ marginLeft: '10%', display: 'flex', alignItems: 'center' }}>
                                     <Typography>{student.obs || 'Sem observações'}</Typography>
                                 </Box>

@@ -47,19 +47,21 @@ export default function EditProfessional() {
         const response = await axios.get(`http://localhost:8080/api/professionals/${id}`);
         if (response.status === 200) {
             const data = response.data;
-            setName(data.firstName || "");
-            setLastName(data.lastName || "");
+            setName(data.first_name || "");
+            setLastName(data.last_name || "");
             setCpf(data.cpf || "");
             setCellphoneNumber(data.celular || "");
-            setUnityApae(data.idSchool || "");
+            setUnityApae(data.school_id || "");
             setAvailableHours(data.availableHoursId || []); // IDs dos horários
-            setSpecialityId(data.specialityId || "");
+            setSpecialityId(data.speciality_id || "");
             setObservations(data.obs || "");
+
+            
         } else {
             throw new Error(`Erro ao buscar profissional: ${response.statusText}`);
         }
     } catch (error) {
-        console.error("Erro ao buscar profissional:", error);
+        console.error("Erro ao buscar profissional:", error);   
         setErrorMessage("Erro ao buscar profissional.");
     } finally {
         setLoading(false);

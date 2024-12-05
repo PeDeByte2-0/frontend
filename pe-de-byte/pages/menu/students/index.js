@@ -177,7 +177,7 @@ export default function Students() {
                                     id="studentScheduling"
                                     variant="outlined"
                                     size="large"
-                                    href="./schedulingStudent"
+                                    href="./students/schedulingStudent"
                                     startIcon={<EventNoteIcon />}
                                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                                 >

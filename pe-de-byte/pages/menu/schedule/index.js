@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Button, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
+import { Box, Button, FormControl, IconButton, InputLabel, MenuItem, OutlinedInput, Select, TextField, Tooltip } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -48,30 +48,40 @@ export default function Schedule() {
                     id='searchSchedules'
                     sx={{ marginLeft:'1rem', marginRight:'1rem', display:'flex', alignItems:'center' }}
                 >
-                    <TextField variant='outlined' label='Pesquisa por Nome' sx={{width:'40%'}}></TextField>
+                    <TextField variant='outlined' label='Pesquisa por Nome' sx={{width:'100%'}}></TextField>
                     <Box
-                        sx={{ width:'100%', marginLeft:'10px'}}  
-    >
-                        <InputLabel id="demo-simple-select-helper-label">Dia da semana</InputLabel>
-                                <Select
+                        sx={{ width:'100%', marginLeft:'1rem'}}  
+                    >
+                        <FormControl sx={{ width: '95%', padding: '1rem' }}>
+                            <InputLabel 
+                                id="demo-simple-select-helper-label" 
+                                sx={{ padding: '1rem' }}
+                            >
+                                Dia da semana
+                            </InputLabel>
+                            <Select
                                 labelId="demo-simple-select-helper-label"
                                 id="demo-simple-select-helper"
                                 value={weekDay}
                                 onChange={handleChange}
+                                input={<OutlinedInput label="Dia da semana" />}
                                 displayEmpty
-                                >
-                            <MenuItem value="">
-                                <em>nenhuma</em>    
-                            </MenuItem>
-                            <MenuItem value={-1} selected={true}>Todos</MenuItem>
-                            <MenuItem value={0}>Segunda-Feira</MenuItem>
-                            <MenuItem value={1}>Terça-Feira</MenuItem>
-                            <MenuItem value={2}>Quarta-Feira</MenuItem>
-                            <MenuItem value={3}>Quinta-Feira</MenuItem>
-                            <MenuItem value={4}>Sexta-Feira</MenuItem>
-                            <MenuItem value={5}>Sábado</MenuItem>
-                            <MenuItem value={6}>Domingo</MenuItem>
-                        </Select>
+                                sx={{width:'100%'}}
+                            >
+                                {/* <MenuItem value="">
+                                    <em> </em>
+                                </MenuItem> */}
+                                <MenuItem value={-1}>Todos</MenuItem>
+                                <MenuItem value={0}>Segunda-Feira</MenuItem>
+                                <MenuItem value={1}>Terça-Feira</MenuItem>
+                                <MenuItem value={2}>Quarta-Feira</MenuItem>
+                                <MenuItem value={3}>Quinta-Feira</MenuItem>
+                                <MenuItem value={4}>Sexta-Feira</MenuItem>
+                                <MenuItem value={5}>Sábado</MenuItem>
+                                <MenuItem value={6}>Domingo</MenuItem>
+                            </Select>
+                        </FormControl>
+
                     </Box>
                     <Tooltip title='Pesquisar'>
                         <Button 

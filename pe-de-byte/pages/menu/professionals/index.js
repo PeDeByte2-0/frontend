@@ -162,7 +162,7 @@ export default function Professionals() {
                                     id="professionalScheduling"
                                     variant="contained"
                                     size="large"
-                                    href="./schedulingProfessional/schedulingProfessional"
+                                    href="./professionals/schedulingProfessional"
                                     startIcon={<EditCalendarIcon />}
                                     sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
                                 >

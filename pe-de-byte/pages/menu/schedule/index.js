@@ -130,7 +130,7 @@ export default function Schedule() {
             professional.professional_name.toLowerCase().includes(value) || 
             professional.professional_surname.toLowerCase().includes(value) ||
             professional.specialty?.toLowerCase().includes(value) ||
-            (weekDay === "" || professional.weekday.toLowerCase().includes(value)) // Filtra pelo dia da semana
+            (professional.weekday.toLowerCase().includes(value)) // Filtra pelo dia da semana
 
         );
         
@@ -189,9 +189,7 @@ export default function Schedule() {
                                 displayEmpty
                                 sx={{width:'100%'}}
                             >
-                                {/* <MenuItem value="">
-                                    <em> </em>
-                                </MenuItem> */}
+
                                 <MenuItem value={""}>Todos</MenuItem>
                                 <MenuItem value={"segunda"}>Segunda-Feira</MenuItem>
                                 <MenuItem value={"terça"}>Terça-Feira</MenuItem>
